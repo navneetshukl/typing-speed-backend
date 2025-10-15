@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"typing-speed/internals/core/typing"
 
@@ -19,6 +20,7 @@ func NewTypingHandler(ty typing.TypingService) TypingHandler {
 }
 
 func (h *TypingHandler) TypingDataHandler(c *gin.Context) {
+	fmt.Println("Typing Handler is hit")
 	var userData *typing.TypingData
 	err := c.ShouldBindJSON(&userData)
 	if err != nil {
