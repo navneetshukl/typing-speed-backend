@@ -23,17 +23,24 @@ func NewTypingHandler(ty typing.TypingService, ch chan logs.LogEntry) TypingHand
 	}
 }
 
+const (
+	LogLevelInfo  = "INFO"
+	LogLevelError = "ERROR"
+)
+
 func (h *TypingHandler) TypingDataHandler(c *gin.Context) {
 	logsData := logs.LogEntry{}
 	logsData.Method = c.Request.Method
 	logsData.Path = c.FullPath()
+	
 	start := time.Now()
 	fmt.Println("Typing Handler is hit")
-	var userData *typing.TypingData
+	var userData typing.TypingData
 	err := c.ShouldBindJSON(&userData)
+	logsData.RequestData=userData
 	if err != nil {
 		logsData.Latency = logs.Duration(time.Since(start))
-		logsData.Level = "ERROR"
+		logsData.Level = LogLevelError
 		logsData.Msg = err.Error()
 		logsData.Status=http.StatusInternalServerError
 		h.logsChan <- logsData
@@ -45,19 +52,19 @@ func (h *TypingHandler) TypingDataHandler(c *gin.Context) {
 		return
 	}
 
-	err = h.typingUseCase.AddUserData(context.Background(), userData)
+	err = h.typingUseCase.AddUserData(context.Background(), &userData)
 	if err != nil {
 		logsData.Latency = logs.Duration(time.Since(start))
-		logsData.Level = "ERROR"
+		logsData.Level = LogLevelError
 		h.handlerError(c, err,&logsData)
 		return
 	}
 	logsData.Latency = logs.Duration(time.Since(start))
-	logsData.Level = "SUCCESS"
+	logsData.Level = LogLevelInfo
 	logsData.Msg = "user registered successfully"
 	logsData.Status=http.StatusOK
 	h.logsChan <- logsData
-	c.JSON(http.StatusInternalServerError, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"message": "user registered successfully",
 		"status":  http.StatusOK,
 		"data":    nil,

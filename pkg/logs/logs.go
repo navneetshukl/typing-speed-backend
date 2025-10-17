@@ -23,6 +23,8 @@ type LogEntry struct {
 	Status    int         `json:"status"`
 	Latency   Duration    `json:"latency"`
 	ExtraData interface{} `json:"extraData"`
+	RequestData interface{} `json:"requestData"`
+	ResponseData interface{} `json:"responseData"`
 }
 
 func (l *LogEntry) CreateLog() {
