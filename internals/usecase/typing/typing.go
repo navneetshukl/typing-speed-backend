@@ -18,16 +18,12 @@ func NewTypingService(svc port.UserRepository) typing.TypingService {
 }
 
 func (t *TypingServiceImpl) AddUserData(ctx context.Context, data *typing.TypingData) error {
-	// err := typing.TypingDataValid(data)
-	// if err != nil {
-	// 	return err
-	// }
 
-	fmt.Println("Request is ",data)
+	fmt.Println("Request is ", data)
 
 	// insert this data to db
-	err:=t.userSvc.InsertUserData(ctx,data)
-	if err!=nil{
+	err := t.userSvc.InsertUserData(ctx, data)
+	if err != nil {
 		return typing.ErrInsertingData
 	}
 	return nil
