@@ -1,6 +1,10 @@
 package auth
 
-import "time"
+import (
+	"time"
+
+	"github.com/golang-jwt/jwt/v5"
+)
 
 type User struct{
 	ID int `json:"id,omitempty"`
@@ -13,6 +17,16 @@ type User struct{
 type LoginUser struct{
 	Email string `json:"email"`
 	Password string `json:"password"`
+}
+
+type AccessClaims struct{
+	Email string `json:"email"`
+	jwt.RegisteredClaims
+}
+
+type RefreshClaims struct{
+	Email string `json:"email"`
+	jwt.RegisteredClaims
 }
 
 type AuthService interface{}
