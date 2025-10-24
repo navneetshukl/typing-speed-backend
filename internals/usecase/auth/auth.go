@@ -80,7 +80,7 @@ func (a *AuthServiceImpl) LoginUser(ctx context.Context, user *auth.LoginUser) (
 }
 
 // if refresh token is empty than redirect the user to login page
-func (a *AuthServiceImpl) RefreshToken(ctx *context.Context, refreshToken string) (string, string, error) {
+func (a *AuthServiceImpl) RefreshToken(ctx context.Context, refreshToken string) (string, string, error) {
 	claims := &auth.RefreshClaims{}
 	_, err := jwt.ParseWithClaims(refreshToken, claims, func(t *jwt.Token) (any, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {

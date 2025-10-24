@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetUpRoutes(typingHandler handler.TypingHandler) *gin.Engine {
+func SetUpRoutes(typingHandler handler.Handler) *gin.Engine {
 	app := gin.New()
 
 	// CORS configuration

@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (h *TypingHandler) handlerError(c *gin.Context, err error, logs *logs.LogEntry) {
+func (h *Handler) handlerError(c *gin.Context, err error, logs *logs.LogEntry) {
 	logs.Msg = err.Error()
 
 	switch {

@@ -28,7 +28,7 @@ func main(){
 
 	typingDBService:=db.NewUserRepository(dbConn)
 	typingUseCase:=typing.NewTypingService(&typingDBService)
-	typingHandler:=handler.NewTypingHandler(typingUseCase,logChan)
+	typingHandler:=handler.NewHandler(typingUseCase,logChan)
 	app:=routes.SetUpRoutes(typingHandler)
 
 	err=app.Run(":8080")
