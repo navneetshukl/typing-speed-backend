@@ -3,14 +3,16 @@ package handler
 import (
 	"errors"
 	"net/http"
+	"typing-speed/internals/core/auth"
 	"typing-speed/internals/core/typing"
 	"typing-speed/pkg/logs"
 
 	"github.com/gin-gonic/gin"
 )
 
-func (h *Handler) handlerError(c *gin.Context, err error, logs *logs.LogEntry) {
-	logs.Msg = err.Error()
+func (h *Handler) handlerError(c *gin.Context, er *auth.ErrorStruct, logs *logs.LogEntry) {
+	logs.Msg = er.ErrorMsg
+	err:=er.Error
 
 	switch {
 	case errors.Is(err, typing.ErrInvalidUser):

@@ -17,10 +17,11 @@ type Handler struct {
 	logsChan      chan logs.LogEntry
 }
 
-func NewHandler(ty typing.TypingService, ch chan logs.LogEntry) Handler {
+func NewHandler(ty typing.TypingService,auth auth.AuthService, ch chan logs.LogEntry) Handler {
 	return Handler{
 		typingUseCase: ty,
 		logsChan:      ch,
+		authUseCase: auth,
 	}
 }
 
@@ -52,11 +53,11 @@ func (h *Handler) TypingDataHandler(c *gin.Context) {
 		return
 	}
 
-	err = h.typingUseCase.AddUserData(context.Background(), &userData)
-	if err != nil {
+	er := h.typingUseCase.AddUserData(context.Background(), &userData)
+	if er != nil {
 		logsData.Latency = logs.Duration(time.Since(start))
 		logsData.Level = LogLevelError
-		h.handlerError(c, err, &logsData)
+		h.handlerError(c, er, &logsData)
 		return
 	}
 	logsData.Latency = logs.Duration(time.Since(start))
@@ -69,6 +70,5 @@ func (h *Handler) TypingDataHandler(c *gin.Context) {
 		"status":  http.StatusOK,
 		"data":    nil,
 	})
-	return
 
 }

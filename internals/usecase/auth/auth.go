@@ -4,6 +4,7 @@ import (
 	"context"
 	"typing-speed/internals/adapter/port"
 	"typing-speed/internals/core/auth"
+
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -16,71 +17,97 @@ func NewAuthService(svc port.AuthRepository) auth.AuthService {
 		authSvc: svc,
 	}
 }
-func (a *AuthServiceImpl) RegisterUser(ctx context.Context, user *auth.User) error {
 
-	// check if the email is unique
+// RegisterUser handles user registration
+func (a *AuthServiceImpl) RegisterUser(ctx context.Context, user *auth.User) *auth.ErrorStruct {
+	errorStruct := &auth.ErrorStruct{}
 
 	if user.Email == "" || user.Name == "" || user.Password == "" {
-		return auth.ErrInvalidUserDetail
+		errorStruct.Error = auth.ErrInvalidUserDetail
+		errorStruct.ErrorMsg = "user detail is not complete"
+		return errorStruct
 	}
 
 	data, err := a.authSvc.GetUserByEmail(ctx, user.Email)
 	if err != nil {
-		return auth.ErrSomethingWentWrong
+		errorStruct.Error = auth.ErrSomethingWentWrong
+		errorStruct.ErrorMsg = "failed to fetch user by email: " + err.Error()
+		return errorStruct
 	}
 	if data != nil {
-		return auth.ErrUserAlreadyRegistered
+		errorStruct.Error = auth.ErrUserAlreadyRegistered
+		errorStruct.ErrorMsg = "user already registered with this email"
+		return errorStruct
 	}
 
 	hash, err := auth.HashPassword(user.Password)
 	if err != nil {
-		return auth.ErrSomethingWentWrong
+		errorStruct.Error = auth.ErrSomethingWentWrong
+		errorStruct.ErrorMsg = "failed to hash password: " + err.Error()
+		return errorStruct
 	}
 	user.Password = hash
 
-	// register the user
 	err = a.authSvc.CreateUser(ctx, user)
 	if err != nil {
-		return auth.ErrSomethingWentWrong
+		errorStruct.Error = auth.ErrSomethingWentWrong
+		errorStruct.ErrorMsg = "failed to create user in database: " + err.Error()
+		return errorStruct
 	}
-	return nil
 
+	return nil
 }
 
-func (a *AuthServiceImpl) LoginUser(ctx context.Context, user *auth.LoginUser) (string, string, error) {
+// LoginUser authenticates user credentials and generates tokens
+func (a *AuthServiceImpl) LoginUser(ctx context.Context, user *auth.LoginUser) (string, string, *auth.ErrorStruct) {
+	errorStruct := &auth.ErrorStruct{}
 
 	if user.Email == "" || user.Password == "" {
-		return "", "", auth.ErrInvalidUserDetail
+		errorStruct.Error = auth.ErrInvalidUserDetail
+		errorStruct.ErrorMsg = "email or password cannot be empty"
+		return "", "", errorStruct
 	}
 
 	data, err := a.authSvc.GetUserByEmail(ctx, user.Email)
 	if err != nil {
-		return "", "", auth.ErrSomethingWentWrong
+		errorStruct.Error = auth.ErrSomethingWentWrong
+		errorStruct.ErrorMsg = "failed to fetch user from DB: " + err.Error()
+		return "", "", errorStruct
 	}
+
 	if data == nil {
-		return "", "", auth.ErrSomethingWentWrong
+		errorStruct.Error = auth.ErrInvalidUserDetail
+		errorStruct.ErrorMsg = "no user found with this email"
+		return "", "", errorStruct
 	}
 
 	if err = auth.ComparePassword(data.Password, user.Password); err != nil {
-		return "", "", auth.ErrInvalidUserDetail
+		errorStruct.Error = auth.ErrInvalidUserDetail
+		errorStruct.ErrorMsg = "incorrect password: " + err.Error()
+		return "", "", errorStruct
 	}
 
-	// create the jwt tokens
 	accessToken, err := auth.CreateAccessToken(data.Email)
 	if err != nil {
-		return "", "", auth.ErrSomethingWentWrong
+		errorStruct.Error = auth.ErrSomethingWentWrong
+		errorStruct.ErrorMsg = "failed to create access token: " + err.Error()
+		return "", "", errorStruct
 	}
 
 	refreshToken, err := auth.CreateRefreshToken(data.Email)
 	if err != nil {
-		return "", "", auth.ErrSomethingWentWrong
+		errorStruct.Error = auth.ErrSomethingWentWrong
+		errorStruct.ErrorMsg = "failed to create refresh token: " + err.Error()
+		return "", "", errorStruct
 	}
 
 	return accessToken, refreshToken, nil
 }
 
-// if refresh token is empty than redirect the user to login page
-func (a *AuthServiceImpl) RefreshToken(ctx context.Context, refreshToken string) (string, string, error) {
+// RefreshToken validates the refresh token and issues new tokens
+func (a *AuthServiceImpl) RefreshToken(ctx context.Context, refreshToken string) (string, string, *auth.ErrorStruct) {
+	errorStruct := &auth.ErrorStruct{}
+
 	claims := &auth.RefreshClaims{}
 	_, err := jwt.ParseWithClaims(refreshToken, claims, func(t *jwt.Token) (any, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -88,20 +115,26 @@ func (a *AuthServiceImpl) RefreshToken(ctx context.Context, refreshToken string)
 		}
 		return auth.REFRESH_SECRET, nil
 	})
+
 	if err != nil {
-		return "", "", auth.ErrInvalidRefreshToken
+		errorStruct.Error = auth.ErrInvalidRefreshToken
+		errorStruct.ErrorMsg = "invalid or expired refresh token: " + err.Error()
+		return "", "", errorStruct
 	}
-	// create the jwt tokens
+
 	accessToken, err := auth.CreateAccessToken(claims.Email)
 	if err != nil {
-		return "", "", auth.ErrSomethingWentWrong
+		errorStruct.Error = auth.ErrSomethingWentWrong
+		errorStruct.ErrorMsg = "failed to create new access token: " + err.Error()
+		return "", "", errorStruct
 	}
 
 	newRefreshToken, err := auth.CreateRefreshToken(claims.Email)
 	if err != nil {
-		return "", "", auth.ErrSomethingWentWrong
+		errorStruct.Error = auth.ErrSomethingWentWrong
+		errorStruct.ErrorMsg = "failed to create new refresh token: " + err.Error()
+		return "", "", errorStruct
 	}
 
 	return accessToken, newRefreshToken, nil
-
 }

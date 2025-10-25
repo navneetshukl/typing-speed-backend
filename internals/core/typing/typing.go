@@ -3,6 +3,7 @@ package typing
 import (
 	"context"
 	"time"
+	"typing-speed/internals/core/auth"
 )
 
 type TypingData struct {
@@ -18,5 +19,5 @@ type TypingData struct {
 }
 
 type TypingService interface {
-	AddUserData(ctx context.Context, data *TypingData) error
+	AddUserData(ctx context.Context, data *TypingData) *auth.ErrorStruct
 }

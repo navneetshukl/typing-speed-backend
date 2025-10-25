@@ -10,3 +10,8 @@ var (
 	ErrUnexpectedSigningMethod error = errors.New("unexpected token signin method")
 	ErrInvalidRefreshToken     error = errors.New("invalid refresh token")
 )
+
+type ErrorStruct struct{
+	Error error
+	ErrorMsg string
+}

@@ -33,11 +33,11 @@ func (h *Handler) RegisterUser(c *gin.Context) {
 		return
 	}
 
-	err = h.authUseCase.RegisterUser(context.Background(), &userData)
-	if err != nil {
+	er := h.authUseCase.RegisterUser(context.Background(), &userData)
+	if er != nil {
 		logsData.Latency = logs.Duration(time.Since(start))
 		logsData.Level = LogLevelError
-		h.handlerError(c, err, &logsData)
+		h.handlerError(c, er, &logsData)
 		return
 	}
 	logsData.Latency = logs.Duration(time.Since(start))
@@ -50,7 +50,7 @@ func (h *Handler) RegisterUser(c *gin.Context) {
 		"status":  http.StatusOK,
 		"data":    nil,
 	})
-	return
+	
 }
 
 func (h *Handler) LoginUser(c *gin.Context) {
@@ -76,11 +76,11 @@ func (h *Handler) LoginUser(c *gin.Context) {
 		return
 	}
 
-	accToken, refToken, err := h.authUseCase.LoginUser(context.Background(), &userData)
-	if err != nil {
+	accToken, refToken, er := h.authUseCase.LoginUser(context.Background(), &userData)
+	if er != nil {
 		logsData.Latency = logs.Duration(time.Since(start))
 		logsData.Level = LogLevelError
-		h.handlerError(c, err, &logsData)
+		h.handlerError(c, er, &logsData)
 		return
 	}
 	logsData.Latency = logs.Duration(time.Since(start))
@@ -95,7 +95,7 @@ func (h *Handler) LoginUser(c *gin.Context) {
 		"data":         nil,
 		"access_token": accToken,
 	})
-	return
+	
 }
 
 func(h *Handler)RefreshHandler(c *gin.Context){
@@ -119,11 +119,11 @@ func(h *Handler)RefreshHandler(c *gin.Context){
 		return
 	}
 
-	accToken, refToken, err := h.authUseCase.RefreshToken(context.Background(), cookie)
-	if err != nil {
+	accToken, refToken, er := h.authUseCase.RefreshToken(context.Background(), cookie)
+	if er != nil {
 		logsData.Latency = logs.Duration(time.Since(start))
 		logsData.Level = LogLevelError
-		h.handlerError(c, err, &logsData)
+		h.handlerError(c, er, &logsData)
 		return
 	}
 	logsData.Latency = logs.Duration(time.Since(start))
@@ -138,5 +138,5 @@ func(h *Handler)RefreshHandler(c *gin.Context){
 		"data":         nil,
 		"access_token": accToken,
 	})
-	return
+	
 }

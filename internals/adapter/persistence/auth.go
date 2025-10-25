@@ -16,22 +16,29 @@ func NewAuthRepository(db *sql.DB) AuthRepositoryImpl {
 	}
 }
 
-func(r *AuthRepositoryImpl)GetUserByEmail(ctx context.Context,email string)(*auth.User,error){
-	query:=`select * from users where email=$1;`
-	rows:=r.db.QueryRowContext(ctx,query,email)
-	if rows.Err()!=nil{
-		if rows.Err()==sql.ErrNoRows{
-			return nil,nil
+func (r *AuthRepositoryImpl) GetUserByEmail(ctx context.Context, email string) (*auth.User, error) {
+	query := `SELECT id, name, email, password, created_at FROM users WHERE email = $1;`
+
+	user := &auth.User{}
+
+	err := r.db.QueryRowContext(ctx, query, email).Scan(
+		&user.ID,
+		&user.Name,
+		&user.Email,
+		&user.Password,
+		&user.CreatedAt,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil // no user found
 		}
-		return nil,rows.Err()
+		return nil, err
 	}
-	user:=&auth.User{}
-	err:=rows.Scan(user)
-	if err!=nil{
-		return nil,err
-	}
-	return user,nil
+
+	return user, nil
 }
+
 
 func(r *AuthRepositoryImpl)CreateUser(ctx context.Context,user *auth.User)(error){
 	query:=`insert into users (name,email,password) values($1,$2,$3);`

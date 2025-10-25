@@ -31,7 +31,7 @@ type RefreshClaims struct {
 }
 
 type AuthService interface {
-	RegisterUser(ctx context.Context, user *User) error
-	LoginUser(ctx context.Context, user *LoginUser) (string, string, error)
-	RefreshToken(ctx context.Context, refreshToken string) (string, string, error)
+	RegisterUser(ctx context.Context, user *User) *ErrorStruct
+	LoginUser(ctx context.Context, user *LoginUser) (string, string, *ErrorStruct)
+	RefreshToken(ctx context.Context, refreshToken string) (string, string, *ErrorStruct)
 }

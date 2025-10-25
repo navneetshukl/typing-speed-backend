@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"typing-speed/internals/adapter/port"
+	"typing-speed/internals/core/auth"
 	"typing-speed/internals/core/typing"
 )
 
@@ -17,14 +18,17 @@ func NewTypingService(svc port.UserRepository) typing.TypingService {
 	}
 }
 
-func (t *TypingServiceImpl) AddUserData(ctx context.Context, data *typing.TypingData) error {
+func (t *TypingServiceImpl) AddUserData(ctx context.Context, data *typing.TypingData) *auth.ErrorStruct {
+	errorStruct := &auth.ErrorStruct{}
 
-	fmt.Println("Request is ", data)
-
-	// insert this data to db
+	// insert data into db
 	err := t.userSvc.InsertUserData(ctx, data)
 	if err != nil {
-		return typing.ErrInsertingData
+		errorStruct.Error = typing.ErrInsertingData
+		errorStruct.ErrorMsg = fmt.Sprintf("failed to insert typing data: %v", err)
+		return errorStruct
 	}
+
 	return nil
 }
+

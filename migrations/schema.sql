@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict HiMchn95PuPpgRxQc96YqE3PHTcpxK8UiFHIEweB0wl052Qb9l53OWt8Z3tec5T
+\restrict 4ZAsFrnP6qpNWIcN0OHNwteRQV0bQFMXMWPcox3bK8gsBDA8eyHzVMyGMWcKMHa
 
 -- Dumped from database version 14.19 (Homebrew)
 -- Dumped by pg_dump version 14.19 (Homebrew)
@@ -39,13 +39,9 @@ ALTER TABLE public.schema_migration OWNER TO navneetshukla;
 
 CREATE TABLE public.users (
     id integer NOT NULL,
-    user_id character varying(100),
-    total_error integer,
-    total_words integer,
-    typed_words integer,
-    total_time integer,
-    total_time_taken_by_user integer,
-    wpm integer,
+    name character varying(255) NOT NULL,
+    email character varying(255) NOT NULL,
+    password character varying(255) NOT NULL,
     created_at timestamp without time zone DEFAULT now()
 );
 
@@ -90,6 +86,14 @@ ALTER TABLE ONLY public.schema_migration
 
 
 --
+-- Name: users users_email_key; Type: CONSTRAINT; Schema: public; Owner: navneetshukla
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_email_key UNIQUE (email);
+
+
+--
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: navneetshukla
 --
 
@@ -108,5 +112,5 @@ CREATE UNIQUE INDEX schema_migration_version_idx ON public.schema_migration USIN
 -- PostgreSQL database dump complete
 --
 
-\unrestrict HiMchn95PuPpgRxQc96YqE3PHTcpxK8UiFHIEweB0wl052Qb9l53OWt8Z3tec5T
+\unrestrict 4ZAsFrnP6qpNWIcN0OHNwteRQV0bQFMXMWPcox3bK8gsBDA8eyHzVMyGMWcKMHa
 
