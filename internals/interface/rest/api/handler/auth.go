@@ -85,12 +85,12 @@ func (h *Handler) LoginUser(c *gin.Context) {
 	}
 	logsData.Latency = logs.Duration(time.Since(start))
 	logsData.Level = LogLevelInfo
-	logsData.Msg = "user registered successfully"
+	logsData.Msg = "user login successfully"
 	logsData.Status = http.StatusOK
 	h.logsChan <- logsData
 	c.SetCookie("refresh_token",refToken,int(24*7*time.Hour),"/","",false,true)
 	c.JSON(http.StatusOK, gin.H{
-		"message":      "user registered successfully",
+		"message":      "user login successfully",
 		"status":       http.StatusOK,
 		"data":         nil,
 		"access_token": accToken,
@@ -128,12 +128,12 @@ func(h *Handler)RefreshHandler(c *gin.Context){
 	}
 	logsData.Latency = logs.Duration(time.Since(start))
 	logsData.Level = LogLevelInfo
-	logsData.Msg = "user registered successfully"
+	logsData.Msg = "refresh token generated successfully"
 	logsData.Status = http.StatusOK
 	h.logsChan <- logsData
 	c.SetCookie("refresh_token",refToken,int(24*7*time.Hour),"/","",false,true)
 	c.JSON(http.StatusOK, gin.H{
-		"message":      "user registered successfully",
+		"message":      "refresh token generated successfully",
 		"status":       http.StatusOK,
 		"data":         nil,
 		"access_token": accToken,

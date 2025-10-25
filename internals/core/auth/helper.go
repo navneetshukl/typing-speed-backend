@@ -44,7 +44,7 @@ func CreateAccessToken(email string)(string,error){
 		},
 	}
 	t:=jwt.NewWithClaims(jwt.SigningMethodHS256,claims)
-	return t.SignedString(ACCESS_SECRET)
+	return t.SignedString([]byte(ACCESS_SECRET))
 }
 
 func CreateRefreshToken(email string)(string,error){
@@ -61,5 +61,5 @@ func CreateRefreshToken(email string)(string,error){
 		},
 	}
 	t:=jwt.NewWithClaims(jwt.SigningMethodHS256,claims)
-	return t.SignedString(REFRESH_SECRET)
+	return t.SignedString([]byte(REFRESH_SECRET))
 }
