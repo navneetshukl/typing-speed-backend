@@ -2,10 +2,13 @@ package routes
 
 import (
 	"typing-speed/internals/interface/rest/api/handler"
+	"typing-speed/pkg/middleware"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
+
+const ACCESS_SECRET string = "access_secret_code"
 
 func SetUpRoutes(handler handler.Handler) *gin.Engine {
 	app := gin.New()
@@ -19,13 +22,14 @@ func SetUpRoutes(handler handler.Handler) *gin.Engine {
 		AllowCredentials: true,
 	}))
 
-	// Example routes
-	api := app.Group("/api")
-	api.POST("/typing",handler.TypingDataHandler)
+	auth := app.Group("/auth")
+	auth.POST("/signup", handler.RegisterUser)
+	auth.POST("/signin", handler.LoginUser)
 
-	auth:=app.Group("/auth")
-	auth.POST("/signup",handler.RegisterUser)
-	auth.POST("/signin",handler.LoginUser)
+	api := app.Group("/api")
+	api.Use(middleware.AuthMiddleware(ACCESS_SECRET))
+
+	api.POST("/typing", handler.TypingDataHandler)
 
 	return app
 }
