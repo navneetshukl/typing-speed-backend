@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -17,20 +16,13 @@ func AuthMiddleware(secret string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 
-		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header missing"})
+		if authHeader == "" || len(authHeader) == 0 {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token format", "status": http.StatusUnauthorized, "data": nil})
 			c.Abort()
 			return
 		}
 
-		parts := strings.Split(authHeader, " ")
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token format","status":http.StatusUnauthorized,"data":nil})
-			c.Abort()
-			return
-		}
-
-		tokenStr := parts[1]
+		tokenStr := authHeader
 
 		claims := &AccessClaims{}
 		token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
@@ -38,7 +30,7 @@ func AuthMiddleware(secret string) gin.HandlerFunc {
 		})
 
 		if err != nil || !token.Valid {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token","status":http.StatusUnauthorized,"data":nil})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token", "status": http.StatusUnauthorized, "data": nil})
 			c.Abort()
 			return
 		}

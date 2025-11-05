@@ -18,16 +18,15 @@ func NewUserRepository(db *sql.DB) UserRepositoryImpl {
 
 func (u *UserRepositoryImpl) InsertUserData(ctx context.Context, data *typing.TypingData) error {
 	query := `
-		INSERT INTO users (
-			user_id,
+		INSERT INTO usertypingdata (
+		    user_id,
 			total_error,
 			total_words,
 			typed_words,
 			total_time,
 			total_time_taken_by_user,
-			wpm,
-			created_at
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
+			wpm
+		) VALUES ($1, $2, $3, $4, $5, $6, $7);
 	`
 
 	_, err := u.db.ExecContext(
@@ -40,7 +39,6 @@ func (u *UserRepositoryImpl) InsertUserData(ctx context.Context, data *typing.Ty
 		data.TotalTime,
 		data.TimeTakenByUser,
 		data.WPM,
-		data.CreatedAt,
 	)
 
 	if err != nil {
@@ -48,5 +46,3 @@ func (u *UserRepositoryImpl) InsertUserData(ctx context.Context, data *typing.Ty
 	}
 	return nil
 }
-
-
