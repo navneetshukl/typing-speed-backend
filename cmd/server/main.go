@@ -18,7 +18,6 @@ import (
 )
 
 func main() {
-	// writing log to log file
 	logChan := make(chan logs.LogEntry, 1000)
 	go func() {
 		for v := range logChan {
@@ -26,7 +25,6 @@ func main() {
 		}
 	}()
 
-	// connect to db
 	dbConn, err := db.ConnectToDB()
 	if err != nil {
 		log.Println("Error connecting to DB:", err)
@@ -42,13 +40,11 @@ func main() {
 	handler := handler.NewHandler(typingUseCase, authUseCase, logChan)
 	router := routes.SetUpRoutes(handler)
 
-	// Create the HTTP server
 	srv := &http.Server{
 		Addr:    ":8080",
 		Handler: router,
 	}
 
-	// Run server in a goroutine so it doesn’t block
 	go func() {
 		log.Println("🚀 Server is running on port 8080")
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -56,13 +52,11 @@ func main() {
 		}
 	}()
 
-	// Listen for interrupt or terminate signal
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit // Block until a signal is received
+	<-quit
 	log.Println("🛑 Shutting down server gracefully...")
 
-	// Create context with timeout for graceful shutdown
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 

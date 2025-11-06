@@ -4,6 +4,8 @@ import (
 	"typing-speed/internals/interface/rest/api/handler"
 	"typing-speed/pkg/middleware"
 
+	"github.com/gin-contrib/pprof"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -21,6 +23,8 @@ func SetUpRoutes(handler handler.Handler) *gin.Engine {
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 	}))
+
+	pprof.Register(app)
 
 	auth := app.Group("/auth")
 	auth.POST("/signup", handler.RegisterUser)
