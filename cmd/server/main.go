@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"typing-speed/internals/adapter/external/sendmail"
 	db "typing-speed/internals/adapter/persistence"
 	routes "typing-speed/internals/interface/rest/api"
 	"typing-speed/internals/interface/rest/api/handler"
@@ -31,11 +32,13 @@ func main() {
 		return
 	}
 
+	mailSvc:=sendmail.NewGoMail("localhost",1025)
+
 	typingDBService := db.NewUserRepository(dbConn)
-	typingUseCase := typing.NewTypingService(&typingDBService)
+	typingUseCase := typing.NewTypingService(&typingDBService,mailSvc)
 
 	authDBService := db.NewAuthRepository(dbConn)
-	authUseCase := auth.NewAuthService(&authDBService)
+	authUseCase := auth.NewAuthService(&authDBService,mailSvc)
 
 	handler := handler.NewHandler(typingUseCase, authUseCase, logChan)
 	router := routes.SetUpRoutes(handler)

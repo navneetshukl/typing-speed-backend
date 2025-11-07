@@ -3,6 +3,7 @@ package typing
 import (
 	"context"
 	"fmt"
+	"typing-speed/internals/adapter/external/sendmail"
 	"typing-speed/internals/adapter/port"
 	"typing-speed/internals/core/auth"
 	"typing-speed/internals/core/typing"
@@ -10,11 +11,13 @@ import (
 
 type TypingServiceImpl struct {
 	userSvc port.UserRepository
+	mailSvc sendmail.MailSender
 }
 
-func NewTypingService(svc port.UserRepository) typing.TypingService {
+func NewTypingService(svc port.UserRepository,mail sendmail.MailSender) typing.TypingService {
 	return &TypingServiceImpl{
 		userSvc: svc,
+		mailSvc: mail,
 	}
 }
 
@@ -31,4 +34,3 @@ func (t *TypingServiceImpl) AddUserData(ctx context.Context, data *typing.Typing
 
 	return nil
 }
-

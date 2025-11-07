@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"typing-speed/internals/adapter/external/sendmail"
 	"typing-speed/internals/adapter/port"
 	"typing-speed/internals/core/auth"
 
@@ -10,11 +11,13 @@ import (
 
 type AuthServiceImpl struct {
 	authSvc port.AuthRepository
+	mailSvc sendmail.MailSender
 }
 
-func NewAuthService(svc port.AuthRepository) auth.AuthService {
+func NewAuthService(svc port.AuthRepository,mail sendmail.MailSender) auth.AuthService {
 	return &AuthServiceImpl{
 		authSvc: svc,
+		mailSvc: mail,
 	}
 }
 
@@ -54,6 +57,8 @@ func (a *AuthServiceImpl) RegisterUser(ctx context.Context, user *auth.User) *au
 		errorStruct.ErrorMsg = "failed to create user in database: " + err.Error()
 		return errorStruct
 	}
+
+	err=a.mailSvc.SendMail("typing@gmail.com",user.Email,"Register","User registered successfully")
 
 	return nil
 }
