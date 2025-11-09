@@ -44,5 +44,6 @@ func (u *UserRepositoryImpl) InsertUserData(ctx context.Context, data *typing.Ty
 	if err != nil {
 		return err
 	}
+	
 	return nil
 }
