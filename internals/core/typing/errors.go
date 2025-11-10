@@ -10,4 +10,5 @@ var (
 	ErrSomethingWentWrong error = errors.New("something went wrong")
 	ErrinvalidTotalErrors error = errors.New("invalid total errors count")
 	ErrInsertingData      error = errors.New("error inserting data to DB")
+	ErrUpdatingTotalTest   error=errors.New("error in updating test count")
 )

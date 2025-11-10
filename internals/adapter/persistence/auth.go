@@ -39,12 +39,26 @@ func (r *AuthRepositoryImpl) GetUserByEmail(ctx context.Context, email string) (
 	return user, nil
 }
 
-
-func(r *AuthRepositoryImpl)CreateUser(ctx context.Context,user *auth.User)(error){
-	query:=`insert into users (name,email,password) values($1,$2,$3);`
-	_,err:=r.db.ExecContext(ctx,query,user.Name,user.Email,user.Password)
-	if err!=nil{
+func (r *AuthRepositoryImpl) CreateUser(ctx context.Context, user *auth.User) error {
+	query := `insert into users (name,email,password) values($1,$2,$3);`
+	_, err := r.db.ExecContext(ctx, query, user.Name, user.Email, user.Password)
+	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (r *AuthRepositoryImpl) UpdateTotalTest(ctx context.Context, email string) error {
+	query := `
+        UPDATE users
+        SET total_test = total_test + 1
+        WHERE email = $1;
+    `
+
+	_, err := r.db.ExecContext(ctx, query, email)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

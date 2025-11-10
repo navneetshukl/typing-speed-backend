@@ -31,14 +31,15 @@ func main() {
 		log.Println("Error connecting to DB:", err)
 		return
 	}
-
 	mailSvc:=sendmail.NewGoMail("localhost",1025)
-
-	typingDBService := db.NewUserRepository(dbConn)
-	typingUseCase := typing.NewTypingService(&typingDBService,mailSvc)
-
 	authDBService := db.NewAuthRepository(dbConn)
 	authUseCase := auth.NewAuthService(&authDBService,mailSvc)
+	
+
+	typingDBService := db.NewUserRepository(dbConn)
+	typingUseCase := typing.NewTypingService(&typingDBService,mailSvc,&authDBService)
+
+
 
 	handler := handler.NewHandler(typingUseCase, authUseCase, logChan)
 	router := routes.SetUpRoutes(handler)
