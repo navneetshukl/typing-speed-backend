@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 	"typing-speed/internals/core/auth"
@@ -17,11 +18,11 @@ type Handler struct {
 	logsChan      chan logs.LogEntry
 }
 
-func NewHandler(ty typing.TypingService,auth auth.AuthService, ch chan logs.LogEntry) Handler {
+func NewHandler(ty typing.TypingService, auth auth.AuthService, ch chan logs.LogEntry) Handler {
 	return Handler{
 		typingUseCase: ty,
 		logsChan:      ch,
-		authUseCase: auth,
+		authUseCase:   auth,
 	}
 }
 
@@ -34,6 +35,23 @@ func (h *Handler) TypingDataHandler(c *gin.Context) {
 	logsData := logs.LogEntry{}
 	logsData.Method = c.Request.Method
 	logsData.Path = c.FullPath()
+	defer func() {
+		if r := recover(); r != nil {
+
+			logsData.Method = c.Request.Method
+			logsData.Path = c.FullPath()
+			logsData.ExtraData = r
+			h.logsChan <- logsData
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error":  "something went wrong",
+				"status": http.StatusInternalServerError,
+				"data":   nil,
+			})
+		}
+
+	}()
+
+	email:=c.GetString("email")
 
 	start := time.Now()
 	var userData typing.TypingData
@@ -53,7 +71,9 @@ func (h *Handler) TypingDataHandler(c *gin.Context) {
 		return
 	}
 
-	er := h.typingUseCase.AddUserData(context.Background(), &userData)
+	fmt.Println("Email in handler is ",email)
+
+	er := h.typingUseCase.AddUserData(context.Background(), &userData,email)
 	if er != nil {
 		logsData.Latency = logs.Duration(time.Since(start))
 		logsData.Level = LogLevelError

@@ -21,10 +21,11 @@ func NewTypingService(svc port.UserRepository,mail sendmail.MailSender) typing.T
 	}
 }
 
-func (t *TypingServiceImpl) AddUserData(ctx context.Context, data *typing.TypingData) *auth.ErrorStruct {
+func (t *TypingServiceImpl) AddUserData(ctx context.Context, data *typing.TypingData,email string) *auth.ErrorStruct {
 	errorStruct := &auth.ErrorStruct{}
 
 	// insert data into db
+	data.Email=email
 	err := t.userSvc.InsertUserData(ctx, data)
 	if err != nil {
 		errorStruct.Error = typing.ErrInsertingData

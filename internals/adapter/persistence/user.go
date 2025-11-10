@@ -18,8 +18,8 @@ func NewUserRepository(db *sql.DB) UserRepositoryImpl {
 
 func (u *UserRepositoryImpl) InsertUserData(ctx context.Context, data *typing.TypingData) error {
 	query := `
-		INSERT INTO usertypingdata (
-		    user_id,
+		INSERT INTO user_typing_data (
+		    email,
 			total_error,
 			total_words,
 			typed_words,
@@ -32,7 +32,7 @@ func (u *UserRepositoryImpl) InsertUserData(ctx context.Context, data *typing.Ty
 	_, err := u.db.ExecContext(
 		ctx,
 		query,
-		data.UserId,
+		data.Email,
 		data.TotalErrors,
 		data.TotalWords,
 		data.TypedWords,

@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -34,6 +35,8 @@ func AuthMiddleware(secret string) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+
+		fmt.Println("Email is ",claims.Email)
 
 		c.Set("email", claims.Email)
 		c.Next()

@@ -4,9 +4,8 @@ import (
 	"typing-speed/internals/interface/rest/api/handler"
 	"typing-speed/pkg/middleware"
 
-	"github.com/gin-contrib/pprof"
-
 	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 )
 

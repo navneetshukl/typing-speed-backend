@@ -1,0 +1,1 @@
+Drop table if exists user_typing_data;

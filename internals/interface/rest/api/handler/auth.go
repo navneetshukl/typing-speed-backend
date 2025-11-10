@@ -12,8 +12,20 @@ import (
 
 func (h *Handler) RegisterUser(c *gin.Context) {
 	logsData := logs.LogEntry{}
-	logsData.Method = c.Request.Method
-	logsData.Path = c.FullPath()
+	defer func() {
+		if r := recover(); r != nil {
+			h.logsChan <- logsData
+			logsData.Method = c.Request.Method
+			logsData.Path = c.FullPath()
+			logsData.ExtraData = r
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error":  "something went wrong",
+				"status": http.StatusInternalServerError,
+				"data":   nil,
+			})
+		}
+
+	}()
 
 	start := time.Now()
 	var userData auth.User
@@ -50,13 +62,28 @@ func (h *Handler) RegisterUser(c *gin.Context) {
 		"status":  http.StatusOK,
 		"data":    nil,
 	})
-	
+
 }
 
 func (h *Handler) LoginUser(c *gin.Context) {
 	logsData := logs.LogEntry{}
 	logsData.Method = c.Request.Method
 	logsData.Path = c.FullPath()
+	defer func() {
+		if r := recover(); r != nil {
+			
+			logsData.Method = c.Request.Method
+			logsData.Path = c.FullPath()
+			logsData.ExtraData = r
+			h.logsChan <- logsData
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error":  "something went wrong",
+				"status": http.StatusInternalServerError,
+				"data":   nil,
+			})
+		}
+
+	}()
 
 	start := time.Now()
 	var userData auth.LoginUser
@@ -88,23 +115,38 @@ func (h *Handler) LoginUser(c *gin.Context) {
 	logsData.Msg = "user login successfully"
 	logsData.Status = http.StatusOK
 	h.logsChan <- logsData
-	c.SetCookie("refresh_token",refToken,int(24*7*time.Hour),"/","",false,true)
+	c.SetCookie("refresh_token", refToken, int(24*7*time.Hour), "/", "", false, true)
 	c.JSON(http.StatusOK, gin.H{
 		"message":      "user login successfully",
 		"status":       http.StatusOK,
 		"data":         nil,
 		"access_token": accToken,
 	})
-	
+
 }
 
-func(h *Handler)RefreshHandler(c *gin.Context){
+func (h *Handler) RefreshHandler(c *gin.Context) {
 	logsData := logs.LogEntry{}
 	logsData.Method = c.Request.Method
 	logsData.Path = c.FullPath()
+	defer func() {
+		if r := recover(); r != nil {
+			
+			logsData.Method = c.Request.Method
+			logsData.Path = c.FullPath()
+			logsData.ExtraData=r
+			h.logsChan <- logsData
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error":  "something went wrong",
+				"status": http.StatusInternalServerError,
+				"data":   nil,
+			})
+		}
+		
+	}()
 
 	start := time.Now()
-	cookie,err:=c.Cookie("refresh_token")
+	cookie, err := c.Cookie("refresh_token")
 	if err != nil {
 		logsData.Latency = logs.Duration(time.Since(start))
 		logsData.Level = LogLevelError
@@ -131,12 +173,12 @@ func(h *Handler)RefreshHandler(c *gin.Context){
 	logsData.Msg = "refresh token generated successfully"
 	logsData.Status = http.StatusOK
 	h.logsChan <- logsData
-	c.SetCookie("refresh_token",refToken,int(24*7*time.Hour),"/","",false,true)
+	c.SetCookie("refresh_token", refToken, int(24*7*time.Hour), "/", "", false, true)
 	c.JSON(http.StatusOK, gin.H{
 		"message":      "refresh token generated successfully",
 		"status":       http.StatusOK,
 		"data":         nil,
 		"access_token": accToken,
 	})
-	
+
 }
