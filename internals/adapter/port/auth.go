@@ -8,5 +8,5 @@ import (
 type AuthRepository interface{
 	GetUserByEmail(ctx context.Context,email string)(*auth.User,error)
 	CreateUser(ctx context.Context,user *auth.User)(error)
-	UpdateTotalTest(ctx context.Context, email string) error 
+	UpdateUser(ctx context.Context, email string, speed, accuracy int) error
 }

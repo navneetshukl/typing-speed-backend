@@ -37,7 +37,18 @@ func (t *TypingServiceImpl) AddUserData(ctx context.Context, data *typing.Typing
 
 	// update the total test of user to +1
 
-	err = t.authSvc.UpdateTotalTest(ctx, email)
+	userData,err:=t.authSvc.GetUserByEmail(ctx,email)
+	if err!=nil{
+
+	}
+	calculatedAccuracy:=(data.TotalErrors*100)/(data.TotalWords)
+	accuracy:=userData.AvgAccuracy*userData.TotalTest
+	speed:=userData.AvgSpeed*userData.TotalTest
+	updatedSpeed:=(speed+data.WPM)/(userData.TotalTest+1)
+	updatedAccuracy:=(calculatedAccuracy+accuracy)/(userData.TotalTest+1)
+	
+
+	err = t.authSvc.UpdateUser(ctx, email,updatedSpeed,updatedAccuracy)
 	if err != nil {
 		errorStruct.Error = typing.ErrUpdatingTotalTest
 		errorStruct.ErrorMsg = fmt.Sprintf("failed to updating test count: %v", err)
