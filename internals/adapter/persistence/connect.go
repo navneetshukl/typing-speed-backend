@@ -20,6 +20,7 @@ func ConnectToDB() (*sql.DB, error) {
 	db.SetMaxOpenConns(25)
 	db.SetMaxIdleConns(25)
 	db.SetConnMaxLifetime(5 * time.Minute)
+	db.SetConnMaxIdleTime(5*time.Minute)
 
 	err = db.Ping()
 	if err != nil {
