@@ -19,4 +19,5 @@ type TypingData struct {
 
 type TypingService interface {
 	AddUserData(ctx context.Context, data *TypingData, email string) *auth.ErrorStruct
+	RecentTestForProfile(ctx context.Context, email string) ([]*TypingData, *auth.ErrorStruct) 
 }

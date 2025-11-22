@@ -44,6 +44,39 @@ func (u *UserRepositoryImpl) InsertUserData(ctx context.Context, data *typing.Ty
 	if err != nil {
 		return err
 	}
-	
+
 	return nil
+}
+
+func (u *UserRepositoryImpl) GetRecentTestForProfile(ctx context.Context, email string) ([]*typing.TypingData, error) {
+	query := `SELECT total_error,total_words,typed_words,total_time,total_time_taken_by_user,wpm,created_at
+			  from user_typing_data WHERE email=$1`
+
+	rows, err := u.db.QueryContext(ctx, query, email)
+	if err != nil {
+		return nil, err
+	}
+	records := []*typing.TypingData{}
+	for rows.Next() {
+		record := &typing.TypingData{}
+		err := rows.Scan(
+			&record.TotalErrors,
+			&record.TotalWords,
+			&record.TypedWords,
+			&record.TotalTime,
+			&record.TimeTakenByUser,
+			&record.WPM,
+			&record.CreatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		records = append(records, record)
+
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return records, nil
 }

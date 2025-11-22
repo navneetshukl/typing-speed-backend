@@ -51,7 +51,7 @@ func (h *Handler) TypingDataHandler(c *gin.Context) {
 
 	}()
 
-	email:=c.GetString("email")
+	email := c.GetString("email")
 
 	start := time.Now()
 	var userData typing.TypingData
@@ -71,9 +71,9 @@ func (h *Handler) TypingDataHandler(c *gin.Context) {
 		return
 	}
 
-	fmt.Println("Email in handler is ",email)
+	fmt.Println("Email in handler is ", email)
 
-	er := h.typingUseCase.AddUserData(context.Background(), &userData,email)
+	er := h.typingUseCase.AddUserData(context.Background(), &userData, email)
 	if er != nil {
 		logsData.Latency = logs.Duration(time.Since(start))
 		logsData.Level = LogLevelError
@@ -91,4 +91,54 @@ func (h *Handler) TypingDataHandler(c *gin.Context) {
 		"data":    nil,
 	})
 
+}
+
+func (h *Handler) RecentTestDashboardHandler(c *gin.Context) {
+	logsData := logs.LogEntry{}
+	logsData.Method = c.Request.Method
+	logsData.Path = c.FullPath()
+	defer func() {
+		if r := recover(); r != nil {
+
+			logsData.Method = c.Request.Method
+			logsData.Path = c.FullPath()
+			logsData.ExtraData = r
+			h.logsChan <- logsData
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error":  "something went wrong",
+				"status": http.StatusInternalServerError,
+				"data":   nil,
+			})
+		}
+
+	}()
+	start := time.Now()
+
+	email := c.GetString("email")
+	email="a@a.com"
+	fmt.Println("Email is ",email)
+	
+	data, err := h.typingUseCase.RecentTestForProfile(context.Background(), email)
+	if err != nil {
+		logsData.Latency = logs.Duration(time.Since(start))
+		logsData.Level = LogLevelError
+		h.handlerError(c, err, &logsData)
+		return
+	}
+
+	logsData.Latency = logs.Duration(time.Since(start))
+	logsData.Level = LogLevelInfo
+	logsData.Msg = "recent test fetched successfully"
+	logsData.Status = http.StatusOK
+	logsData.ResponseData=data
+	h.logsChan <- logsData
+	// var resp interface{}
+	// if data != nil {
+	// 	resp = data
+	// }
+	c.JSON(http.StatusOK, gin.H{
+		"message": "recent test fetched successfully",
+		"status":  http.StatusOK,
+		"data":    data,
+	})
 }
