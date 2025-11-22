@@ -19,7 +19,8 @@ func NewAuthRepository(db *sql.DB) AuthRepositoryImpl {
 
 func (r *AuthRepositoryImpl) GetUserByEmail(ctx context.Context, email string) (*auth.User, error) {
 	query := `
-		SELECT id, name, email, password, created_at, avg_speed, avg_accuracy, total_test, level, last_test_time, streak
+		SELECT id, name, email, password, created_at, avg_speed, avg_accuracy, total_test, level, last_test_time, streak,
+        best_speed,avg_performance
 		FROM users
 		WHERE email = $1;
 	`
@@ -38,6 +39,8 @@ func (r *AuthRepositoryImpl) GetUserByEmail(ctx context.Context, email string) (
 		&user.Level,
 		&user.LastTestTime,
 		&user.Streak,
+		&user.BestSpeed,
+		&user.AvgPerformance,
 	)
 
 	if err != nil {

@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict IAQMFEwOsMRBcdDGtxsS2pagQoKUchnDgw1Q64T2ZyewLEnYRAWaUyWmTca4AQc
+\restrict ueWg6DzD8hj4DNFIXevMfXRbSRIPP56Bb5waY94cZc9djVXXl3RbdAuI6Fd1DQy
 
 -- Dumped from database version 14.19 (Homebrew)
 -- Dumped by pg_dump version 14.19 (Homebrew)
@@ -68,6 +68,8 @@ CREATE TABLE public.users (
     level integer DEFAULT 0,
     last_test_time timestamp with time zone,
     streak integer DEFAULT 0,
+    best_speed double precision DEFAULT 0,
+    avg_performance double precision DEFAULT 0,
     CONSTRAINT users_avg_accuracy_check CHECK (((avg_accuracy >= 0) AND (avg_accuracy <= 100))),
     CONSTRAINT users_avg_speed_check CHECK ((avg_speed >= 0)),
     CONSTRAINT users_level_check CHECK ((level >= 0)),
@@ -157,5 +159,5 @@ ALTER TABLE ONLY public.user_typing_data
 -- PostgreSQL database dump complete
 --
 
-\unrestrict IAQMFEwOsMRBcdDGtxsS2pagQoKUchnDgw1Q64T2ZyewLEnYRAWaUyWmTca4AQc
+\unrestrict ueWg6DzD8hj4DNFIXevMfXRbSRIPP56Bb5waY94cZc9djVXXl3RbdAuI6Fd1DQy
 

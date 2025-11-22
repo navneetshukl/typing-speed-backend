@@ -2,7 +2,6 @@ package routes
 
 import (
 	"typing-speed/internals/interface/rest/api/handler"
-	"typing-speed/pkg/middleware"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/pprof"
@@ -30,12 +29,13 @@ func SetUpRoutes(handler handler.Handler) *gin.Engine {
 	auth.POST("/signin", handler.LoginUser)
 
 	api := app.Group("/api")
-	api.Use(middleware.AuthMiddleware(ACCESS_SECRET))
+	//api.Use(middleware.AuthMiddleware(ACCESS_SECRET))
 
 	api.POST("/typing", handler.TypingDataHandler)
+	api.GET("/userData", handler.UserByEmailHandler)
 
 	dashboard := app.Group("/dashboard")
-	dashboard.GET("/recentTest",handler.RecentTestDashboardHandler)
+	dashboard.GET("/recentTest", handler.RecentTestDashboardHandler)
 
 	return app
 }

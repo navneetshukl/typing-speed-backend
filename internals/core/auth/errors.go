@@ -9,9 +9,10 @@ var (
 	ErrUserNotFound            error = errors.New("user not found")
 	ErrUnexpectedSigningMethod error = errors.New("unexpected token signin method")
 	ErrInvalidRefreshToken     error = errors.New("invalid refresh token")
+	ErrGettingDataFromDB       error = errors.New("error getting data from DB")
 )
 
-type ErrorStruct struct{
-	Error error
+type ErrorStruct struct {
+	Error    error
 	ErrorMsg string
 }

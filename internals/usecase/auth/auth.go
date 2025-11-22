@@ -14,7 +14,7 @@ type AuthServiceImpl struct {
 	mailSvc sendmail.MailSender
 }
 
-func NewAuthService(svc port.AuthRepository,mail sendmail.MailSender) auth.AuthService {
+func NewAuthService(svc port.AuthRepository, mail sendmail.MailSender) auth.AuthService {
 	return &AuthServiceImpl{
 		authSvc: svc,
 		mailSvc: mail,
@@ -58,7 +58,7 @@ func (a *AuthServiceImpl) RegisterUser(ctx context.Context, user *auth.User) *au
 		return errorStruct
 	}
 
-	err=a.mailSvc.SendMail("typing@gmail.com",user.Email,"Register","User registered successfully")
+	err = a.mailSvc.SendMail("typing@gmail.com", user.Email, "Register", "User registered successfully")
 
 	return nil
 }
@@ -142,4 +142,16 @@ func (a *AuthServiceImpl) RefreshToken(ctx context.Context, refreshToken string)
 	}
 
 	return accessToken, newRefreshToken, nil
+}
+
+func (a *AuthServiceImpl) UserByEmail(ctx context.Context, email string) (*auth.User, *auth.ErrorStruct) {
+	errorStruct := &auth.ErrorStruct{}
+	user, err := a.authSvc.GetUserByEmail(ctx, email)
+	if err != nil {
+		errorStruct.Error = auth.ErrGettingDataFromDB
+		errorStruct.ErrorMsg = "failed to get user data " + err.Error()
+		return nil, errorStruct
+	}
+	return user, nil
+
 }

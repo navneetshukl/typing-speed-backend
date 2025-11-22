@@ -1,0 +1,3 @@
+ALTER TABLE users
+ADD COLUMN best_speed FLOAT DEFAULT 0,
+ADD COLUMN avg_performance FLOAT DEFAULT 0;
