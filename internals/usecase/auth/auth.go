@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"fmt"
 	"typing-speed/internals/adapter/external/sendmail"
 	"typing-speed/internals/adapter/port"
 	"typing-speed/internals/core/auth"
@@ -154,4 +155,15 @@ func (a *AuthServiceImpl) UserByEmail(ctx context.Context, email string) (*auth.
 	}
 	return user, nil
 
+}
+
+func (t *AuthServiceImpl) TopPerformer(ctx context.Context) ([]*auth.TopPerformer, *auth.ErrorStruct) {
+	errorStruct := &auth.ErrorStruct{}
+	data, err := t.authSvc.GetTopPerformer(ctx)
+	if err != nil {
+		errorStruct.Error = auth.ErrGettingDataFromDB
+		errorStruct.ErrorMsg = fmt.Sprintf("failed to get data from DB %v", err)
+		return nil, errorStruct
+	}
+	return data, nil
 }

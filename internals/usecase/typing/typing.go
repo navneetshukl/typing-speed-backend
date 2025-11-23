@@ -3,6 +3,7 @@ package typing
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"typing-speed/internals/adapter/external/sendmail"
 	"typing-speed/internals/adapter/port"
 	"typing-speed/internals/core/auth"
@@ -57,9 +58,20 @@ func (t *TypingServiceImpl) AddUserData(ctx context.Context, data *typing.Typing
 	return nil
 }
 
-func (t *TypingServiceImpl) RecentTestForProfile(ctx context.Context, email string) ([]*typing.TypingData, *auth.ErrorStruct) {
+func (t *TypingServiceImpl) RecentTestForProfile(ctx context.Context, email string, month string) ([]*typing.TypingData, *auth.ErrorStruct) {
 	errorStruct := &auth.ErrorStruct{}
-	data, err := t.userSvc.GetRecentTestForProfile(ctx, email)
+	var m int
+	var err error
+	if month != "" {
+		m, err = strconv.Atoi(month)
+		if err != nil {
+			errorStruct.Error = typing.ErrSomethingWentWrong
+			errorStruct.ErrorMsg = fmt.Sprintf("error converting string to int: %v", err)
+			return nil, errorStruct
+		}
+	}
+	m = -1
+	data, err := t.userSvc.GetRecentTestForProfile(ctx, email, m)
 	if err != nil {
 		errorStruct.Error = typing.ErrGettingDataFromDB
 		errorStruct.ErrorMsg = fmt.Sprintf("failed to insert typing data: %v", err)
@@ -67,3 +79,5 @@ func (t *TypingServiceImpl) RecentTestForProfile(ctx context.Context, email stri
 	}
 	return data, nil
 }
+
+

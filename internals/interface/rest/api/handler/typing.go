@@ -117,8 +117,11 @@ func (h *Handler) RecentTestDashboardHandler(c *gin.Context) {
 	email := c.GetString("email")
 	email="a@a.com"
 	fmt.Println("Email is ",email)
+	month:=c.Query("month")
+
+	fmt.Println("Month is ",month)
 	
-	data, err := h.typingUseCase.RecentTestForProfile(context.Background(), email)
+	data, err := h.typingUseCase.RecentTestForProfile(context.Background(), email,month)
 	if err != nil {
 		logsData.Latency = logs.Duration(time.Since(start))
 		logsData.Level = LogLevelError
@@ -132,13 +135,11 @@ func (h *Handler) RecentTestDashboardHandler(c *gin.Context) {
 	logsData.Status = http.StatusOK
 	logsData.ResponseData=data
 	h.logsChan <- logsData
-	// var resp interface{}
-	// if data != nil {
-	// 	resp = data
-	// }
 	c.JSON(http.StatusOK, gin.H{
 		"message": "recent test fetched successfully",
 		"status":  http.StatusOK,
 		"data":    data,
 	})
 }
+
+

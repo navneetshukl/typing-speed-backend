@@ -23,6 +23,11 @@ type User struct {
 	AvgPerformance float64    `db:"avg_performance" json:"avgPerformance"`
 }
 
+type TopPerformer struct {
+	Name        string `json:"name"`
+	Performance int    `json:"performance"`
+}
+
 type LoginUser struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
@@ -43,4 +48,5 @@ type AuthService interface {
 	LoginUser(ctx context.Context, user *LoginUser) (string, string, *ErrorStruct)
 	RefreshToken(ctx context.Context, refreshToken string) (string, string, *ErrorStruct)
 	UserByEmail(ctx context.Context, email string) (*User, *ErrorStruct)
+	TopPerformer(ctx context.Context) ([]*TopPerformer, *ErrorStruct)
 }

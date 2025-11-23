@@ -229,3 +229,48 @@ func (h *Handler) UserByEmailHandler(c *gin.Context) {
 		"data":    data,
 	})
 }
+
+func (h *Handler) TopPerformerHandler(c *gin.Context) {
+	logsData := logs.LogEntry{}
+	logsData.Method = c.Request.Method
+	logsData.Path = c.FullPath()
+	defer func() {
+		if r := recover(); r != nil {
+
+			logsData.Method = c.Request.Method
+			logsData.Path = c.FullPath()
+			logsData.ExtraData = r
+			h.logsChan <- logsData
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error":  "something went wrong",
+				"status": http.StatusInternalServerError,
+				"data":   nil,
+			})
+		}
+
+	}()
+	start := time.Now()
+
+	
+	data, err := h.authUseCase.TopPerformer(context.Background())
+	if err != nil {
+		logsData.Latency = logs.Duration(time.Since(start))
+		logsData.Level = LogLevelError
+		h.handlerError(c, err, &logsData)
+		return
+	}
+
+	fmt.Println("Top performer is ",data)
+
+	logsData.Latency = logs.Duration(time.Since(start))
+	logsData.Level = LogLevelInfo
+	logsData.Msg = "top performer fetched successfully"
+	logsData.Status = http.StatusOK
+	logsData.ResponseData=data
+	h.logsChan <- logsData
+	c.JSON(http.StatusOK, gin.H{
+		"message": "top performer fetched successfully",
+		"status":  http.StatusOK,
+		"data":    data,
+	})
+}

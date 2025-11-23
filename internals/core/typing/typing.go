@@ -17,7 +17,9 @@ type TypingData struct {
 	CreatedAt       time.Time `json:"createdAt"`
 }
 
+
+
 type TypingService interface {
 	AddUserData(ctx context.Context, data *TypingData, email string) *auth.ErrorStruct
-	RecentTestForProfile(ctx context.Context, email string) ([]*TypingData, *auth.ErrorStruct) 
+	RecentTestForProfile(ctx context.Context, email string, month string) ([]*TypingData, *auth.ErrorStruct)
 }

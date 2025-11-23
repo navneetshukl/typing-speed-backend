@@ -86,3 +86,29 @@ func (r *AuthRepositoryImpl) UpdateUser(ctx context.Context, email string, speed
 	return nil
 }
 
+func (u *AuthRepositoryImpl) GetTopPerformer(ctx context.Context) ([]*auth.TopPerformer, error) {
+    query := `SELECT name, avg_performance FROM users ORDER BY avg_performance DESC LIMIT 10`
+
+    rows, err := u.db.QueryContext(ctx, query)
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    performers := []*auth.TopPerformer{}
+
+    for rows.Next() {
+        p := &auth.TopPerformer{}
+        if err := rows.Scan(&p.Name, &p.Performance); err != nil {
+            return nil, err
+        }
+        performers = append(performers, p)
+    }
+
+    if err := rows.Err(); err != nil {
+        return nil, err
+    }
+
+    return performers, nil
+}
+
