@@ -6,30 +6,30 @@ import (
 	"strconv"
 	"typing-speed/internals/adapter/external/sendmail"
 	"typing-speed/internals/adapter/port"
-	"typing-speed/internals/core/auth"
 	"typing-speed/internals/core/typing"
+	"typing-speed/internals/core/user"
 )
 
 type TypingServiceImpl struct {
 	userSvc port.UserRepository
 	mailSvc sendmail.MailSender
-	authSvc port.AuthRepository
+	testSvc port.TestRepository
 }
 
-func NewTypingService(svc port.UserRepository, mail sendmail.MailSender, auth port.AuthRepository) typing.TypingService {
+func NewTypingService(svc port.UserRepository, mail sendmail.MailSender, test port.TestRepository) typing.TypingService {
 	return &TypingServiceImpl{
 		userSvc: svc,
 		mailSvc: mail,
-		authSvc: auth,
+		testSvc: test,
 	}
 }
 
-func (t *TypingServiceImpl) AddUserData(ctx context.Context, data *typing.TypingData, email string) *auth.ErrorStruct {
-	errorStruct := &auth.ErrorStruct{}
+func (t *TypingServiceImpl) AddTestData(ctx context.Context, data *typing.TypingData, email string) *user.ErrorStruct {
+	errorStruct := &user.ErrorStruct{}
 
 	// insert data into db
 	data.Email = email
-	err := t.userSvc.InsertUserData(ctx, data)
+	err := t.testSvc.InsertTestData(ctx, data)
 	if err != nil {
 		errorStruct.Error = typing.ErrInsertingData
 		errorStruct.ErrorMsg = fmt.Sprintf("failed to insert typing data: %v", err)
@@ -38,7 +38,7 @@ func (t *TypingServiceImpl) AddUserData(ctx context.Context, data *typing.Typing
 
 	// update the total test of user to +1
 
-	userData, err := t.authSvc.GetUserByEmail(ctx, email)
+	userData, err := t.userSvc.GetUserByEmail(ctx, email)
 	if err != nil {
 
 	}
@@ -48,7 +48,7 @@ func (t *TypingServiceImpl) AddUserData(ctx context.Context, data *typing.Typing
 	updatedSpeed := (speed + data.WPM) / (userData.TotalTest + 1)
 	updatedAccuracy := (calculatedAccuracy + accuracy) / (userData.TotalTest + 1)
 
-	err = t.authSvc.UpdateUser(ctx, email, updatedSpeed, updatedAccuracy)
+	err = t.userSvc.UpdateUser(ctx, email, updatedSpeed, updatedAccuracy)
 	if err != nil {
 		errorStruct.Error = typing.ErrUpdatingTotalTest
 		errorStruct.ErrorMsg = fmt.Sprintf("failed to updating test count: %v", err)
@@ -58,8 +58,8 @@ func (t *TypingServiceImpl) AddUserData(ctx context.Context, data *typing.Typing
 	return nil
 }
 
-func (t *TypingServiceImpl) RecentTestForProfile(ctx context.Context, email string, month string) ([]*typing.TypingData, *auth.ErrorStruct) {
-	errorStruct := &auth.ErrorStruct{}
+func (t *TypingServiceImpl) RecentTestForProfile(ctx context.Context, email string, month string) ([]*typing.TypingData, *user.ErrorStruct) {
+	errorStruct := &user.ErrorStruct{}
 	var m int
 	var err error
 	if month != "" {
@@ -71,7 +71,7 @@ func (t *TypingServiceImpl) RecentTestForProfile(ctx context.Context, email stri
 		}
 	}
 	m = -1
-	data, err := t.userSvc.GetRecentTestForProfile(ctx, email, m)
+	data, err := t.testSvc.GetRecentTestData(ctx, email, m)
 	if err != nil {
 		errorStruct.Error = typing.ErrGettingDataFromDB
 		errorStruct.ErrorMsg = fmt.Sprintf("failed to insert typing data: %v", err)
@@ -79,5 +79,3 @@ func (t *TypingServiceImpl) RecentTestForProfile(ctx context.Context, email stri
 	}
 	return data, nil
 }
-
-

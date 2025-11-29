@@ -3,14 +3,14 @@ package handler
 import (
 	"errors"
 	"net/http"
-	"typing-speed/internals/core/auth"
 	"typing-speed/internals/core/typing"
+	"typing-speed/internals/core/user"
 	"typing-speed/pkg/logs"
 
 	"github.com/gin-gonic/gin"
 )
 
-func (h *Handler) handlerError(c *gin.Context, er *auth.ErrorStruct, logs *logs.LogEntry) {
+func (h *Handler) handlerError(c *gin.Context, er *user.ErrorStruct, logs *logs.LogEntry) {
 	logs.Msg = er.ErrorMsg
 	err:=er.Error
 
@@ -25,7 +25,7 @@ func (h *Handler) handlerError(c *gin.Context, er *auth.ErrorStruct, logs *logs.
 			"data":   nil,
 		})
 
-	case errors.Is(err,auth.ErrUserNotFound):
+	case errors.Is(err,user.ErrUserNotFound):
 		logs.Status = http.StatusNotFound
 		h.logsChan <- *logs
 		c.JSON(http.StatusNotFound, gin.H{
@@ -34,7 +34,7 @@ func (h *Handler) handlerError(c *gin.Context, er *auth.ErrorStruct, logs *logs.
 			"data":   nil,
 		})
 
-		case errors.Is(err,auth.ErrInvalidUserDetail):
+		case errors.Is(err,user.ErrInvalidUserDetail):
 		logs.Status = http.StatusBadRequest
 		h.logsChan <- *logs
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -43,7 +43,7 @@ func (h *Handler) handlerError(c *gin.Context, er *auth.ErrorStruct, logs *logs.
 			"data":   nil,
 		})
 
-		case errors.Is(err,auth.ErrInvalidRefreshToken):
+		case errors.Is(err,user.ErrInvalidRefreshToken):
 		logs.Status = http.StatusForbidden
 		h.logsChan <- *logs
 		c.JSON(http.StatusForbidden, gin.H{
@@ -52,7 +52,7 @@ func (h *Handler) handlerError(c *gin.Context, er *auth.ErrorStruct, logs *logs.
 			"data":   nil,
 		})
 
-		case errors.Is(err,auth.ErrUserAlreadyRegistered):
+		case errors.Is(err,user.ErrUserAlreadyRegistered):
 		logs.Status = http.StatusBadRequest
 		h.logsChan <- *logs
 		c.JSON(http.StatusForbidden, gin.H{

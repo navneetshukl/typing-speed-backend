@@ -2,10 +2,12 @@ package port
 
 import (
 	"context"
-	"typing-speed/internals/core/typing"
+	"typing-speed/internals/core/user"
 )
 
 type UserRepository interface {
-	InsertUserData(ctx context.Context, user *typing.TypingData) error
-	GetRecentTestForProfile(ctx context.Context, email string, month int) ([]*typing.TypingData, error)
+	GetUserByEmail(ctx context.Context, email string) (*user.User, error)
+	CreateUser(ctx context.Context, user *user.User) error
+	UpdateUser(ctx context.Context, email string, speed, accuracy int) error
+	GetTopPerformer(ctx context.Context) ([]*user.TopPerformer, error)
 }

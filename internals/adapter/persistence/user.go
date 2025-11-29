@@ -3,8 +3,8 @@ package db
 import (
 	"context"
 	"database/sql"
-	"fmt"
-	"typing-speed/internals/core/typing"
+	"errors"
+	"typing-speed/internals/core/user"
 )
 
 type UserRepositoryImpl struct {
@@ -17,31 +17,50 @@ func NewUserRepository(db *sql.DB) UserRepositoryImpl {
 	}
 }
 
-func (u *UserRepositoryImpl) InsertUserData(ctx context.Context, data *typing.TypingData) error {
+func (r *UserRepositoryImpl) GetUserByEmail(ctx context.Context, email string) (*user.User, error) {
 	query := `
-		INSERT INTO user_typing_data (
-		    email,
-			total_error,
-			total_words,
-			typed_words,
-			total_time,
-			total_time_taken_by_user,
-			wpm
-		) VALUES ($1, $2, $3, $4, $5, $6, $7);
+		SELECT id, name, email, password, created_at, avg_speed, avg_accuracy, total_test, level, last_test_time, streak,
+        best_speed,avg_performance
+		FROM users
+		WHERE email = $1;
 	`
 
-	_, err := u.db.ExecContext(
-		ctx,
-		query,
-		data.Email,
-		data.TotalErrors,
-		data.TotalWords,
-		data.TypedWords,
-		data.TotalTime,
-		data.TimeTakenByUser,
-		data.WPM,
+	user := &user.User{}
+
+	err := r.db.QueryRowContext(ctx, query, email).Scan(
+		&user.ID,
+		&user.Name,
+		&user.Email,
+		&user.Password,
+		&user.CreatedAt,
+		&user.AvgSpeed,
+		&user.AvgAccuracy,
+		&user.TotalTest,
+		&user.Level,
+		&user.LastTestTime,
+		&user.Streak,
+		&user.BestSpeed,
+		&user.AvgPerformance,
 	)
 
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil // user not found
+		}
+		return nil, err
+	}
+
+	return user, nil
+}
+
+// CreateUser inserts a new user into the database (no return)
+func (r *UserRepositoryImpl) CreateUser(ctx context.Context, user *user.User) error {
+	query := `
+		INSERT INTO users (name, email, password)
+		VALUES ($1, $2, $3);
+	`
+
+	_, err := r.db.ExecContext(ctx, query, user.Name, user.Email, user.Password)
 	if err != nil {
 		return err
 	}
@@ -49,59 +68,46 @@ func (u *UserRepositoryImpl) InsertUserData(ctx context.Context, data *typing.Ty
 	return nil
 }
 
-func (u *UserRepositoryImpl) GetRecentTestForProfile(ctx context.Context, email string, month int) ([]*typing.TypingData, error) {
-	days := 30 * month
+func (r *UserRepositoryImpl) UpdateUser(ctx context.Context, email string, speed, accuracy int) error {
+	query := `
+        UPDATE users
+        SET 
+            total_test = total_test + 1,
+            avg_speed = $2,
+            avg_accuracy = $3
+        WHERE email = $1;
+    `
 
-	var query string
-
-	if month == -1 {
-		query = `
-			SELECT total_error, total_words, typed_words, total_time,
-			       total_time_taken_by_user, wpm, created_at
-			FROM user_typing_data
-			WHERE email = $1
-			ORDER BY created_at DESC
-		`
-	} else {
-		query = fmt.Sprintf(`
-			SELECT total_error, total_words, typed_words, total_time,
-			       total_time_taken_by_user, wpm, created_at
-			FROM user_typing_data
-			WHERE email = $1
-			  AND created_at >= NOW() - INTERVAL '%d days'
-			ORDER BY created_at DESC
-		`, days)
+	_, err := r.db.ExecContext(ctx, query, email, speed, accuracy)
+	if err != nil {
+		return err
 	}
 
-	rows, err := u.db.QueryContext(ctx, query, email)
+	return nil
+}
+
+func (u *UserRepositoryImpl) GetTopPerformer(ctx context.Context) ([]*user.TopPerformer, error) {
+	query := `SELECT name, avg_performance FROM users ORDER BY avg_performance DESC LIMIT 10`
+
+	rows, err := u.db.QueryContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var records []*typing.TypingData
+	performers := []*user.TopPerformer{}
 
 	for rows.Next() {
-		record := &typing.TypingData{}
-		if err := rows.Scan(
-			&record.TotalErrors,
-			&record.TotalWords,
-			&record.TypedWords,
-			&record.TotalTime,
-			&record.TimeTakenByUser,
-			&record.WPM,
-			&record.CreatedAt,
-		); err != nil {
+		p := &user.TopPerformer{}
+		if err := rows.Scan(&p.Name, &p.Performance); err != nil {
 			return nil, err
 		}
-		records = append(records, record)
+		performers = append(performers, p)
 	}
 
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
-	return records, nil
+	return performers, nil
 }
-
-

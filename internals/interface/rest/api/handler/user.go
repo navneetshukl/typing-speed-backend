@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-	"typing-speed/internals/core/auth"
+	"typing-speed/internals/core/user"
 	"typing-speed/pkg/logs"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -29,7 +28,7 @@ func (h *Handler) RegisterUser(c *gin.Context) {
 	}()
 
 	start := time.Now()
-	var userData auth.User
+	var userData user.User
 	err := c.ShouldBindJSON(&userData)
 	logsData.RequestData = userData
 	if err != nil {
@@ -46,7 +45,7 @@ func (h *Handler) RegisterUser(c *gin.Context) {
 		return
 	}
 
-	er := h.authUseCase.RegisterUser(context.Background(), &userData)
+	er := h.userUseCase.RegisterUser(context.Background(), &userData)
 	if er != nil {
 		logsData.Latency = logs.Duration(time.Since(start))
 		logsData.Level = LogLevelError
@@ -87,7 +86,7 @@ func (h *Handler) LoginUser(c *gin.Context) {
 	}()
 
 	start := time.Now()
-	var userData auth.LoginUser
+	var userData user.LoginUser
 	err := c.ShouldBindJSON(&userData)
 	logsData.RequestData = userData
 	if err != nil {
@@ -104,7 +103,7 @@ func (h *Handler) LoginUser(c *gin.Context) {
 		return
 	}
 
-	accToken, refToken, er := h.authUseCase.LoginUser(context.Background(), &userData)
+	accToken, refToken, er := h.userUseCase.LoginUser(context.Background(), &userData)
 	if er != nil {
 		logsData.Latency = logs.Duration(time.Since(start))
 		logsData.Level = LogLevelError
@@ -162,7 +161,7 @@ func (h *Handler) RefreshHandler(c *gin.Context) {
 		return
 	}
 
-	accToken, refToken, er := h.authUseCase.RefreshToken(context.Background(), cookie)
+	accToken, refToken, er := h.userUseCase.RefreshToken(context.Background(), cookie)
 	if er != nil {
 		logsData.Latency = logs.Duration(time.Since(start))
 		logsData.Level = LogLevelError
@@ -209,7 +208,7 @@ func (h *Handler) UserByEmailHandler(c *gin.Context) {
 	email = "a@a.com"
 	fmt.Println("Email is ", email)
 
-	data, err := h.authUseCase.UserByEmail(context.Background(), email)
+	data, err := h.userUseCase.UserByEmail(context.Background(), email)
 	if err != nil {
 		logsData.Latency = logs.Duration(time.Since(start))
 		logsData.Level = LogLevelError
@@ -251,8 +250,7 @@ func (h *Handler) TopPerformerHandler(c *gin.Context) {
 	}()
 	start := time.Now()
 
-	
-	data, err := h.authUseCase.TopPerformer(context.Background())
+	data, err := h.userUseCase.TopPerformer(context.Background())
 	if err != nil {
 		logsData.Latency = logs.Duration(time.Since(start))
 		logsData.Level = LogLevelError
@@ -260,13 +258,13 @@ func (h *Handler) TopPerformerHandler(c *gin.Context) {
 		return
 	}
 
-	fmt.Println("Top performer is ",data)
+	fmt.Println("Top performer is ", data)
 
 	logsData.Latency = logs.Duration(time.Since(start))
 	logsData.Level = LogLevelInfo
 	logsData.Msg = "top performer fetched successfully"
 	logsData.Status = http.StatusOK
-	logsData.ResponseData=data
+	logsData.ResponseData = data
 	h.logsChan <- logsData
 	c.JSON(http.StatusOK, gin.H{
 		"message": "top performer fetched successfully",

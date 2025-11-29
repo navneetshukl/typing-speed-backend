@@ -1,4 +1,4 @@
-package auth
+package user
 
 import (
 	"context"
@@ -43,7 +43,7 @@ type RefreshClaims struct {
 	jwt.RegisteredClaims
 }
 
-type AuthService interface {
+type UserService interface {
 	RegisterUser(ctx context.Context, user *User) *ErrorStruct
 	LoginUser(ctx context.Context, user *LoginUser) (string, string, *ErrorStruct)
 	RefreshToken(ctx context.Context, refreshToken string) (string, string, *ErrorStruct)

@@ -13,8 +13,8 @@ import (
 	db "typing-speed/internals/adapter/persistence"
 	routes "typing-speed/internals/interface/rest/api"
 	"typing-speed/internals/interface/rest/api/handler"
-	"typing-speed/internals/usecase/auth"
-	"typing-speed/internals/usecase/typing"
+	typeSvc "typing-speed/internals/usecase/typing"
+	userSvc "typing-speed/internals/usecase/user"
 	"typing-speed/pkg/logs"
 )
 
@@ -31,17 +31,14 @@ func main() {
 		log.Println("Error connecting to DB:", err)
 		return
 	}
-	mailSvc:=sendmail.NewGoMail("localhost",1025)
-	authDBService := db.NewAuthRepository(dbConn)
-	authUseCase := auth.NewAuthService(&authDBService,mailSvc)
-	
+	mailSvc := sendmail.NewGoMail("localhost", 1025)
+	userDBService := db.NewUserRepository(dbConn)
+	userUseCase := userSvc.NewUserService(&userDBService, mailSvc)
 
-	typingDBService := db.NewUserRepository(dbConn)
-	typingUseCase := typing.NewTypingService(&typingDBService,mailSvc,&authDBService)
+	testDBService := db.NewTestRepository(dbConn)
+	typingUseCase := typeSvc.NewTypingService(&userDBService, mailSvc, &testDBService)
 
-
-
-	handler := handler.NewHandler(typingUseCase, authUseCase, logChan)
+	handler := handler.NewHandler(typingUseCase, userUseCase, logChan)
 	router := routes.SetUpRoutes(handler)
 
 	srv := &http.Server{

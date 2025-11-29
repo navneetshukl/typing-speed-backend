@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-	"typing-speed/internals/core/auth"
 	"typing-speed/internals/core/typing"
+	"typing-speed/internals/core/user"
 	"typing-speed/pkg/logs"
 
 	"github.com/gin-gonic/gin"
@@ -14,15 +14,15 @@ import (
 
 type Handler struct {
 	typingUseCase typing.TypingService
-	authUseCase   auth.AuthService
+	userUseCase   user.UserService
 	logsChan      chan logs.LogEntry
 }
 
-func NewHandler(ty typing.TypingService, auth auth.AuthService, ch chan logs.LogEntry) Handler {
+func NewHandler(ty typing.TypingService, auth user.UserService, ch chan logs.LogEntry) Handler {
 	return Handler{
 		typingUseCase: ty,
 		logsChan:      ch,
-		authUseCase:   auth,
+		userUseCase:   auth,
 	}
 }
 
@@ -73,7 +73,7 @@ func (h *Handler) TypingDataHandler(c *gin.Context) {
 
 	fmt.Println("Email in handler is ", email)
 
-	er := h.typingUseCase.AddUserData(context.Background(), &userData, email)
+	er := h.typingUseCase.AddTestData(context.Background(), &userData, email)
 	if er != nil {
 		logsData.Latency = logs.Duration(time.Since(start))
 		logsData.Level = LogLevelError
