@@ -111,3 +111,53 @@ func (u *UserRepositoryImpl) GetTopPerformer(ctx context.Context) ([]*user.TopPe
 
 	return performers, nil
 }
+
+func (u *UserRepositoryImpl) GetAllUser(ctx context.Context) ([]*user.User, error) {
+	query := `
+        SELECT 
+            id, name, email, password, created_at, 
+            avg_speed, avg_accuracy, total_test, level, 
+            last_test_time, streak, best_speed, avg_performance
+        FROM users;
+    `
+
+	rows, err := u.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []*user.User
+
+	for rows.Next() {
+		u := &user.User{}
+
+		err := rows.Scan(
+			&u.ID,
+			&u.Name,
+			&u.Email,
+			&u.Password,
+			&u.CreatedAt,
+			&u.AvgSpeed,
+			&u.AvgAccuracy,
+			&u.TotalTest,
+			&u.Level,
+			&u.LastTestTime,
+			&u.Streak,
+			&u.BestSpeed,
+			&u.AvgPerformance,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		users = append(users, u)
+	}
+
+	// Check if iteration had an error
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}

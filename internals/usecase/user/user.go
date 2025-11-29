@@ -167,3 +167,15 @@ func (t *UserServiceImpl) TopPerformer(ctx context.Context) ([]*user.TopPerforme
 	}
 	return data, nil
 }
+
+func (a *UserServiceImpl) GetAllUser(ctx context.Context) ([]*user.User, *user.ErrorStruct) {
+	errorStruct := &user.ErrorStruct{}
+	userData, err := a.userSvc.GetAllUser(ctx)
+	if err != nil {
+		errorStruct.Error = user.ErrGettingDataFromDB
+		errorStruct.ErrorMsg = "failed to get user data " + err.Error()
+		return nil, errorStruct
+	}
+	return userData, nil
+
+}

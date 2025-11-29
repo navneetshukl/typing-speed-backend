@@ -272,3 +272,50 @@ func (h *Handler) TopPerformerHandler(c *gin.Context) {
 		"data":    data,
 	})
 }
+
+
+func (h *Handler) AllUserHandler(c *gin.Context) {
+	logsData := logs.LogEntry{}
+	logsData.Method = c.Request.Method
+	logsData.Path = c.FullPath()
+	defer func() {
+		if r := recover(); r != nil {
+
+			logsData.Method = c.Request.Method
+			logsData.Path = c.FullPath()
+			logsData.ExtraData = r
+			h.logsChan <- logsData
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error":  "something went wrong",
+				"status": http.StatusInternalServerError,
+				"data":   nil,
+			})
+		}
+
+	}()
+	start := time.Now()
+
+	// email := c.GetString("email")
+	// email = "a@a.com"
+	// fmt.Println("Email is ", email)
+
+	data, err := h.userUseCase.GetAllUser(context.Background())
+	if err != nil {
+		logsData.Latency = logs.Duration(time.Since(start))
+		logsData.Level = LogLevelError
+		h.handlerError(c, err, &logsData)
+		return
+	}
+
+	logsData.Latency = logs.Duration(time.Since(start))
+	logsData.Level = LogLevelInfo
+	logsData.Msg = "user data fetched successfully"
+	logsData.Status = http.StatusOK
+	logsData.ResponseData = data
+	h.logsChan <- logsData
+	c.JSON(http.StatusOK, gin.H{
+		"message": "user data fetched successfully",
+		"status":  http.StatusOK,
+		"data":    data,
+	})
+}

@@ -49,4 +49,5 @@ type UserService interface {
 	RefreshToken(ctx context.Context, refreshToken string) (string, string, *ErrorStruct)
 	UserByEmail(ctx context.Context, email string) (*User, *ErrorStruct)
 	TopPerformer(ctx context.Context) ([]*TopPerformer, *ErrorStruct)
+	GetAllUser(ctx context.Context) ([]*User, *ErrorStruct) 
 }
