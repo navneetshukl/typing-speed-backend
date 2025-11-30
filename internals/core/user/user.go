@@ -11,7 +11,7 @@ type User struct {
 	ID             int64      `db:"id" json:"-"`
 	Name           string     `db:"name" json:"name"`
 	Email          string     `db:"email" json:"email"`
-	Password       string     `db:"password" json:"-"`
+	Password       string     `db:"password" json:"password"`
 	CreatedAt      time.Time  `db:"created_at" json:"createdAt"`
 	AvgSpeed       int        `db:"avg_speed" json:"avgSpeed"`
 	AvgAccuracy    int        `db:"avg_accuracy" json:"avgAccuracy"`
