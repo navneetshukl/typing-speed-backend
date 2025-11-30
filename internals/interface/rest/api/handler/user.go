@@ -274,7 +274,7 @@ func (h *Handler) TopPerformerHandler(c *gin.Context) {
 }
 
 
-func (h *Handler) AllUserHandler(c *gin.Context) {
+func (h *Handler) DataForDashboardHandler(c *gin.Context) {
 	logsData := logs.LogEntry{}
 	logsData.Method = c.Request.Method
 	logsData.Path = c.FullPath()
@@ -299,7 +299,7 @@ func (h *Handler) AllUserHandler(c *gin.Context) {
 	// email = "a@a.com"
 	// fmt.Println("Email is ", email)
 
-	data, err := h.userUseCase.GetAllUser(context.Background())
+	data, err := h.userUseCase.GetDataForDashboard(context.Background())
 	if err != nil {
 		logsData.Latency = logs.Duration(time.Since(start))
 		logsData.Level = LogLevelError

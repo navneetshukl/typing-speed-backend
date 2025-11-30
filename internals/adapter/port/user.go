@@ -11,4 +11,5 @@ type UserRepository interface {
 	UpdateUser(ctx context.Context, email string, speed, accuracy int) error
 	GetTopPerformer(ctx context.Context) ([]*user.TopPerformer, error)
 	GetAllUser(ctx context.Context) ([]*user.User, error)
+	GetDashboardTopData(ctx context.Context) (*user.DashboardTopData, error)
 }

@@ -43,11 +43,22 @@ type RefreshClaims struct {
 	jwt.RegisteredClaims
 }
 
+type DashboardTopData struct {
+	TotalTest       int64 `json:"totalTest"`
+	AverageSpeed    int   `json:"avgSpeed"`
+	AverageAccuracy int   `json:"avgAccuracy"`
+}
+
+type DashboardData struct{
+	User []*User  `json:"user"`
+	DashboardTopData *DashboardTopData `json:"dashboardTopData"`
+}
+
 type UserService interface {
 	RegisterUser(ctx context.Context, user *User) *ErrorStruct
 	LoginUser(ctx context.Context, user *LoginUser) (string, string, *ErrorStruct)
 	RefreshToken(ctx context.Context, refreshToken string) (string, string, *ErrorStruct)
 	UserByEmail(ctx context.Context, email string) (*User, *ErrorStruct)
 	TopPerformer(ctx context.Context) ([]*TopPerformer, *ErrorStruct)
-	GetAllUser(ctx context.Context) ([]*User, *ErrorStruct) 
+	GetDataForDashboard(ctx context.Context) (*DashboardData, *ErrorStruct)
 }

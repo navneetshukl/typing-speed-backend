@@ -161,3 +161,31 @@ func (u *UserRepositoryImpl) GetAllUser(ctx context.Context) ([]*user.User, erro
 
 	return users, nil
 }
+
+func (u *UserRepositoryImpl) GetDashboardTopData(ctx context.Context) (*user.DashboardTopData, error) {
+    query := `
+        SELECT 
+            AVG(avg_speed) AS avg_speed,
+            AVG(avg_accuracy) AS avg_accuracy,
+            SUM(total_test) AS total_test
+        FROM users;
+    `
+
+    var avgSpeed float64
+    var avgAccuracy float64
+    var totalTest int64
+
+    err := u.db.QueryRowContext(ctx, query).Scan(&avgSpeed, &avgAccuracy, &totalTest)
+    if err != nil {
+        return nil, err
+    }
+
+    data := &user.DashboardTopData{
+        TotalTest:       totalTest,
+        AverageSpeed:    int(avgSpeed),
+        AverageAccuracy: int(avgAccuracy),
+    }
+
+    return data, nil
+}
+
