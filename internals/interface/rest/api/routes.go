@@ -2,18 +2,16 @@ package routes
 
 import (
 	"typing-speed/internals/interface/rest/api/handler"
+	"typing-speed/middleware"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 )
 
-const ACCESS_SECRET string = "access_secret_code"
-
 func SetUpRoutes(handler handler.Handler) *gin.Engine {
 	app := gin.New()
 
-	// CORS configuration
 	app.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:5173"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -22,21 +20,23 @@ func SetUpRoutes(handler handler.Handler) *gin.Engine {
 		AllowCredentials: true,
 	}))
 
+	// Debug profiling
 	pprof.Register(app)
 
 	auth := app.Group("/auth")
 	auth.POST("/signup", handler.RegisterUser)
 	auth.POST("/signin", handler.LoginUser)
 
-	api := app.Group("/api")
-	//api.Use(middleware.AuthMiddleware(ACCESS_SECRET))
+	protected := app.Group("/")
+	protected.Use(middleware.AuthMiddleware())
 
+	api := protected.Group("/api")
 	api.POST("/typing", handler.TypingDataHandler)
 	api.GET("/userData", handler.UserByEmailHandler)
-	api.GET("/topPerformer",handler.TopPerformerHandler)
-	api.GET("/allUser",handler.DataForDashboardHandler)
+	api.GET("/topPerformer", handler.TopPerformerHandler)
+	api.GET("/allUser", handler.DataForDashboardHandler)
 
-	dashboard := app.Group("/dashboard")
+	dashboard := protected.Group("/dashboard")
 	dashboard.GET("/recentTest", handler.RecentTestDashboardHandler)
 
 	return app
