@@ -205,7 +205,6 @@ func (h *Handler) UserByEmailHandler(c *gin.Context) {
 	start := time.Now()
 
 	email := c.GetString("email")
-	email = "a@a.com"
 	fmt.Println("Email is ", email)
 
 	data, err := h.userUseCase.UserByEmail(context.Background(), email)
@@ -295,9 +294,6 @@ func (h *Handler) DataForDashboardHandler(c *gin.Context) {
 	}()
 	start := time.Now()
 
-	// email := c.GetString("email")
-	// email = "a@a.com"
-	// fmt.Println("Email is ", email)
 
 	data, err := h.userUseCase.GetDataForDashboard(context.Background())
 	if err != nil {

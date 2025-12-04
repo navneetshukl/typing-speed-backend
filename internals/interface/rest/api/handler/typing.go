@@ -115,8 +115,6 @@ func (h *Handler) RecentTestDashboardHandler(c *gin.Context) {
 	start := time.Now()
 
 	email := c.GetString("email")
-	email="a@a.com"
-	fmt.Println("Email is ",email)
 	month:=c.Query("month")
 
 	fmt.Println("Month is ",month)
