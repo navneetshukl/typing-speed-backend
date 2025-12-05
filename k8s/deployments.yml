@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: typing-speed-deployment
+  labels:
+    app: typing-speed
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: typing-speed-pod
+
+  template:
+    metadata:
+      labels:
+        app: typing-speed-pod
+    spec:
+      containers:
+        - name:
+          image:
+          ports:
+            - containerPort:
+
+
