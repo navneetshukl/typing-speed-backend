@@ -1,3 +1,6 @@
 database.yml
 logs
 logic.txt
+.env
+docker-compose.yml
+dockerfile

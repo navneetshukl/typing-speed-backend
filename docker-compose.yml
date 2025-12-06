@@ -1,11 +1,33 @@
-version: "3.8"
+version: "3.9"
 
 services:
-  # --- MailHog Service ---
-  mailhog:
-    image: mailhog/mailhog
-    container_name: mailhog
+  postgres:
+    image: postgres:16
+    container_name: typing-postgres
     restart: always
+    environment:
+      POSTGRES_USER: navneetshukla
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: typing
     ports:
-      - "1025:1025"   # SMTP port
-      - "8025:8025"   # Web UI port
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    image: navneetshukla/typing-speed:latest
+    container_name: typing-go-app
+    depends_on:
+      - postgres
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: navneetshukla
+      DB_PASSWORD: postgres
+      DB_NAME: typing
+    ports:
+      - "8080:8080"
+    restart: always
+
+volumes:
+  postgres_data:
