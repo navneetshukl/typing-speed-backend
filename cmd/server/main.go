@@ -16,6 +16,8 @@ import (
 	typeSvc "typing-speed/internals/usecase/typing"
 	userSvc "typing-speed/internals/usecase/user"
 	"typing-speed/pkg/logs"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -26,12 +28,16 @@ func main() {
 		}
 	}()
 
-	// err:=godotenv.Load()
-	// if err!=nil{
-	// 	log.Println("Error Loading the env ",err)
-	// 	return
-	// }
+	env := os.Getenv("env")
+	log.Println("ENV is ",env)
+	if env == "" {
 
+		err := godotenv.Load()
+		if err != nil {
+			log.Println("Error Loading the env ", err)
+			return
+		}
+	}
 	dbConn, err := db.ConnectToDB()
 	if err != nil {
 		log.Println("Error connecting to DB:", err)

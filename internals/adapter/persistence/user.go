@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
 	"typing-speed/internals/core/user"
 )
 
@@ -68,17 +69,20 @@ func (r *UserRepositoryImpl) CreateUser(ctx context.Context, user *user.User) er
 	return nil
 }
 
-func (r *UserRepositoryImpl) UpdateUser(ctx context.Context, email string, speed, accuracy int) error {
+func (r *UserRepositoryImpl) UpdateUser(ctx context.Context, email string, speed, accuracy int,performance float64,bestSpeed int) error {
 	query := `
         UPDATE users
         SET 
             total_test = total_test + 1,
             avg_speed = $2,
-            avg_accuracy = $3
+            avg_accuracy = $3,
+			avg_performance=$4,
+			last_test_time=$5,
+			best_speed=$6
         WHERE email = $1;
     `
 
-	_, err := r.db.ExecContext(ctx, query, email, speed, accuracy)
+	_, err := r.db.ExecContext(ctx, query, email, speed, accuracy,performance,time.Now(),bestSpeed)
 	if err != nil {
 		return err
 	}

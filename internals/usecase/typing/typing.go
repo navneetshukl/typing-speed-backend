@@ -40,15 +40,23 @@ func (t *TypingServiceImpl) AddTestData(ctx context.Context, data *typing.Typing
 
 	userData, err := t.userSvc.GetUserByEmail(ctx, email)
 	if err != nil {
-
+		errorStruct.Error = typing.ErrGettingDataFromDB
+		errorStruct.ErrorMsg = fmt.Sprintf("failed to get user from db: %v", err)
+		return errorStruct
 	}
-	calculatedAccuracy := (data.TotalErrors * 100) / (data.TotalWords)
-	accuracy := userData.AvgAccuracy * userData.TotalTest
-	speed := userData.AvgSpeed * userData.TotalTest
-	updatedSpeed := (speed + data.WPM) / (userData.TotalTest + 1)
-	updatedAccuracy := (calculatedAccuracy + accuracy) / (userData.TotalTest + 1)
+	currentAccuracy := ((data.TypedWords - data.TotalErrors) * 100) / (data.TotalWords)
+	updatedAccuracy := (userData.AvgAccuracy*userData.TotalTest + currentAccuracy) / (userData.TotalTest + 1)
+	bestSpeed := data.WPM
+	if userData.BestSpeed > float64(bestSpeed) {
+		bestSpeed = int(userData.BestSpeed)
+	}
+	updatedSpeed:=(data.WPM+(userData.AvgSpeed*userData.TotalTest))/(userData.TotalTest+1)
+	currentPerformance := float64(data.WPM * currentAccuracy)
 
-	err = t.userSvc.UpdateUser(ctx, email, updatedSpeed, updatedAccuracy)
+	updatedPerformance := (userData.AvgPerformance*float64(userData.TotalTest) + currentPerformance) /
+		float64(userData.TotalTest+1)
+
+	err = t.userSvc.UpdateUser(ctx, email, updatedSpeed, updatedAccuracy,updatedPerformance,bestSpeed)
 	if err != nil {
 		errorStruct.Error = typing.ErrUpdatingTotalTest
 		errorStruct.ErrorMsg = fmt.Sprintf("failed to updating test count: %v", err)
