@@ -11,7 +11,7 @@ type User struct {
 	ID             int64      `db:"id" json:"-"`
 	Name           string     `db:"name" json:"name"`
 	Email          string     `db:"email" json:"email"`
-	Password       string     `db:"password" json:"password"`
+	Password       string     `db:"password" json:"-"`
 	CreatedAt      time.Time  `db:"created_at" json:"createdAt"`
 	AvgSpeed       int        `db:"avg_speed" json:"avgSpeed"`
 	AvgAccuracy    int        `db:"avg_accuracy" json:"avgAccuracy"`
@@ -19,8 +19,8 @@ type User struct {
 	Level          int        `db:"level" json:"level"`
 	LastTestTime   *time.Time `db:"last_test_time" json:"lastTestTime,omitempty"`
 	Streak         int        `db:"streak" json:"streak"`
-	BestSpeed      float64    `db:"best_speed" json:"bestSpeed"`
-	AvgPerformance float64    `db:"avg_performance" json:"avgPerformance"`
+	BestSpeed      int    `db:"best_speed" json:"bestSpeed"`
+	AvgPerformance int    `db:"avg_performance" json:"avgPerformance"`
 }
 
 type TopPerformer struct {
@@ -56,7 +56,7 @@ type DashboardData struct{
 
 type UserService interface {
 	RegisterUser(ctx context.Context, user *User) *ErrorStruct
-	LoginUser(ctx context.Context, user *LoginUser) (string, string, *ErrorStruct)
+	LoginUser(ctx context.Context, user *LoginUser) (interface{}, *ErrorStruct)
 	RefreshToken(ctx context.Context, refreshToken string) (string, string, *ErrorStruct)
 	UserByEmail(ctx context.Context, email string) (*User, *ErrorStruct)
 	TopPerformer(ctx context.Context) ([]*TopPerformer, *ErrorStruct)

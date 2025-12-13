@@ -47,14 +47,14 @@ func (t *TypingServiceImpl) AddTestData(ctx context.Context, data *typing.Typing
 	currentAccuracy := ((data.TypedWords - data.TotalErrors) * 100) / (data.TotalWords)
 	updatedAccuracy := (userData.AvgAccuracy*userData.TotalTest + currentAccuracy) / (userData.TotalTest + 1)
 	bestSpeed := data.WPM
-	if userData.BestSpeed > float64(bestSpeed) {
+	if userData.BestSpeed > (bestSpeed) {
 		bestSpeed = int(userData.BestSpeed)
 	}
 	updatedSpeed:=(data.WPM+(userData.AvgSpeed*userData.TotalTest))/(userData.TotalTest+1)
-	currentPerformance := float64(data.WPM * currentAccuracy)
+	currentPerformance := (data.WPM * currentAccuracy)
 
-	updatedPerformance := (userData.AvgPerformance*float64(userData.TotalTest) + currentPerformance) /
-		float64(userData.TotalTest+1)
+	updatedPerformance := (userData.AvgPerformance*(userData.TotalTest) + currentPerformance) /
+		(userData.TotalTest+1)
 
 	err = t.userSvc.UpdateUser(ctx, email, updatedSpeed, updatedAccuracy,updatedPerformance,bestSpeed)
 	if err != nil {

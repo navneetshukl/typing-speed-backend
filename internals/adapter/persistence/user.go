@@ -69,7 +69,7 @@ func (r *UserRepositoryImpl) CreateUser(ctx context.Context, user *user.User) er
 	return nil
 }
 
-func (r *UserRepositoryImpl) UpdateUser(ctx context.Context, email string, speed, accuracy int,performance float64,bestSpeed int) error {
+func (r *UserRepositoryImpl) UpdateUser(ctx context.Context, email string, speed, accuracy int,performance int,bestSpeed int) error {
 	query := `
         UPDATE users
         SET 

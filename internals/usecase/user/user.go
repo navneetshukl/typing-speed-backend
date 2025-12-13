@@ -65,49 +65,59 @@ func (a *UserServiceImpl) RegisterUser(ctx context.Context, userData *user.User)
 }
 
 // LoginUser userenticates user credentials and generates tokens
-func (a *UserServiceImpl) LoginUser(ctx context.Context, userData *user.LoginUser) (string, string, *user.ErrorStruct) {
+func (a *UserServiceImpl) LoginUser(ctx context.Context, userData *user.LoginUser) (interface{}, *user.ErrorStruct) {
 	errorStruct := &user.ErrorStruct{}
 
 	if userData.Email == "" || userData.Password == "" {
 		errorStruct.Error = user.ErrInvalidUserDetail
 		errorStruct.ErrorMsg = "email or password cannot be empty"
-		return "", "", errorStruct
+		return nil, errorStruct
 	}
 
 	data, err := a.userSvc.GetUserByEmail(ctx, userData.Email)
 	if err != nil {
 		errorStruct.Error = user.ErrSomethingWentWrong
 		errorStruct.ErrorMsg = "failed to fetch user from DB: " + err.Error()
-		return "", "", errorStruct
+		return nil, errorStruct
 	}
 
 	if data == nil {
 		errorStruct.Error = user.ErrInvalidUserDetail
 		errorStruct.ErrorMsg = "no user found with this email"
-		return "", "", errorStruct
+		return nil, errorStruct
 	}
 
 	if err = user.ComparePassword(data.Password, userData.Password); err != nil {
 		errorStruct.Error = user.ErrInvalidUserDetail
 		errorStruct.ErrorMsg = "incorrect password: " + err.Error()
-		return "", "", errorStruct
+		return nil, errorStruct
 	}
 
 	accessToken, err := user.CreateAccessToken(data.Email)
 	if err != nil {
 		errorStruct.Error = user.ErrSomethingWentWrong
 		errorStruct.ErrorMsg = "failed to create access token: " + err.Error()
-		return "", "", errorStruct
+		return nil, errorStruct
 	}
 
 	refreshToken, err := user.CreateRefreshToken(data.Email)
 	if err != nil {
 		errorStruct.Error = user.ErrSomethingWentWrong
 		errorStruct.ErrorMsg = "failed to create refresh token: " + err.Error()
-		return "", "", errorStruct
+		return nil, errorStruct
 	}
 
-	return accessToken, refreshToken, nil
+	loginResponse := struct {
+		AccessToken  string     `json:"accessToekn"`
+		RefreshToken string     `json:"refreshToken"`
+		User         *user.User `json:"user"`
+	}{
+		AccessToken:  accessToken,
+		User:         data,
+		RefreshToken: refreshToken,
+	}
+
+	return loginResponse, nil
 }
 
 // RefreshToken validates the refresh token and issues new tokens
@@ -184,9 +194,9 @@ func (a *UserServiceImpl) GetDataForDashboard(ctx context.Context) (*user.Dashbo
 		return nil, errorStruct
 	}
 
-	response:=&user.DashboardData{}
-	response.User=userData
-	response.DashboardTopData=dashboardData
+	response := &user.DashboardData{}
+	response.User = userData
+	response.DashboardTopData = dashboardData
 
 	return response, nil
 

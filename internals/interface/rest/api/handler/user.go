@@ -2,11 +2,13 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
 	"typing-speed/internals/core/user"
 	"typing-speed/pkg/logs"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -84,7 +86,6 @@ func (h *Handler) LoginUser(c *gin.Context) {
 		}
 
 	}()
-
 	start := time.Now()
 	var userData user.LoginUser
 	err := c.ShouldBindJSON(&userData)
@@ -103,13 +104,37 @@ func (h *Handler) LoginUser(c *gin.Context) {
 		return
 	}
 
-	accToken, refToken, er := h.userUseCase.LoginUser(context.Background(), &userData)
+	loginData, er := h.userUseCase.LoginUser(context.Background(), &userData)
 	if er != nil {
 		logsData.Latency = logs.Duration(time.Since(start))
 		logsData.Level = LogLevelError
 		h.handlerError(c, er, &logsData)
 		return
 	}
+	loginResp :=struct {
+		AccessToken  string     `json:"accessToekn"`
+		RefreshToken string     `json:"refreshToken"`
+		User         *user.User `json:"user"`
+	}{}
+
+	jsonByte,err:=json.Marshal(loginData)
+	if err!=nil{
+		logsData.Latency = logs.Duration(time.Since(start))
+		logsData.Level = LogLevelError
+		h.handlerError(c, er, &logsData)
+		return
+	}
+
+	err=json.Unmarshal(jsonByte,&loginResp)
+	if err!=nil{
+		logsData.Latency = logs.Duration(time.Since(start))
+		logsData.Level = LogLevelError
+		h.handlerError(c, er, &logsData)
+		return
+	}
+	refToken := loginResp.RefreshToken
+	accToken := loginResp.AccessToken
+	data := loginResp.User
 	logsData.Latency = logs.Duration(time.Since(start))
 	logsData.Level = LogLevelInfo
 	logsData.Msg = "user login successfully"
@@ -119,7 +144,7 @@ func (h *Handler) LoginUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message":      "user login successfully",
 		"status":       http.StatusOK,
-		"data":         nil,
+		"data":         data,
 		"access_token": accToken,
 	})
 
@@ -272,7 +297,6 @@ func (h *Handler) TopPerformerHandler(c *gin.Context) {
 	})
 }
 
-
 func (h *Handler) DataForDashboardHandler(c *gin.Context) {
 	logsData := logs.LogEntry{}
 	logsData.Method = c.Request.Method
@@ -293,7 +317,6 @@ func (h *Handler) DataForDashboardHandler(c *gin.Context) {
 
 	}()
 	start := time.Now()
-
 
 	data, err := h.userUseCase.GetDataForDashboard(context.Background())
 	if err != nil {
