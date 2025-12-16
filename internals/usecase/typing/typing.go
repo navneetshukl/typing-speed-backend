@@ -47,7 +47,12 @@ func (t *TypingServiceImpl) AddTestData(ctx context.Context, data *typing.Typing
 		errorStruct.ErrorMsg = fmt.Sprintf("failed to get user from db: %v", err)
 		return errorStruct
 	}
-	currentAccuracy := ((data.TypedWords - data.TotalErrors) * 100) / (data.TotalWords)
+	var currentAccuracy int
+	if data.TotalWords == 0 {
+		currentAccuracy = 0
+	} else {
+		currentAccuracy = ((data.TypedWords - data.TotalErrors) * 100) / (data.TotalWords)
+	}
 	updatedAccuracy := (userData.AvgAccuracy*userData.TotalTest + currentAccuracy) / (userData.TotalTest + 1)
 	bestSpeed := data.WPM
 	if userData.BestSpeed > (bestSpeed) {
