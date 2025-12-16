@@ -20,4 +20,5 @@ type TypingData struct {
 type TypingService interface {
 	AddTestData(ctx context.Context, data *TypingData, email string) *user.ErrorStruct
 	RecentTestForProfile(ctx context.Context, email string, month string) ([]*TypingData, *user.ErrorStruct)
+	SendTypingSentence(ctx context.Context) string
 }

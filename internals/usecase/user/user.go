@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"fmt"
+	"log"
 	"typing-speed/internals/adapter/external/sendmail"
 	"typing-speed/internals/adapter/port"
 	"typing-speed/internals/core/user"
@@ -25,6 +26,7 @@ func NewUserService(svc port.UserRepository, mail sendmail.MailSender) user.User
 // RegisterUser handles user registration
 func (a *UserServiceImpl) RegisterUser(ctx context.Context, userData *user.User) *user.ErrorStruct {
 	errorStruct := &user.ErrorStruct{}
+	log.Println("UserData is ",userData.Name," ",userData.Email," ",userData.Password)
 
 	if userData.Email == "" || userData.Name == "" || userData.Password == "" {
 		errorStruct.Error = user.ErrInvalidUserDetail

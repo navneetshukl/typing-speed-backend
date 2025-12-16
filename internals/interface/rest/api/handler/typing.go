@@ -115,11 +115,11 @@ func (h *Handler) RecentTestDashboardHandler(c *gin.Context) {
 	start := time.Now()
 
 	email := c.GetString("email")
-	month:=c.Query("month")
+	month := c.Query("month")
 
-	fmt.Println("Month is ",month)
-	
-	data, err := h.typingUseCase.RecentTestForProfile(context.Background(), email,month)
+	fmt.Println("Month is ", month)
+
+	data, err := h.typingUseCase.RecentTestForProfile(context.Background(), email, month)
 	if err != nil {
 		logsData.Latency = logs.Duration(time.Since(start))
 		logsData.Level = LogLevelError
@@ -131,7 +131,7 @@ func (h *Handler) RecentTestDashboardHandler(c *gin.Context) {
 	logsData.Level = LogLevelInfo
 	logsData.Msg = "recent test fetched successfully"
 	logsData.Status = http.StatusOK
-	logsData.ResponseData=data
+	logsData.ResponseData = data
 	h.logsChan <- logsData
 	c.JSON(http.StatusOK, gin.H{
 		"message": "recent test fetched successfully",
@@ -140,4 +140,38 @@ func (h *Handler) RecentTestDashboardHandler(c *gin.Context) {
 	})
 }
 
+func (h *Handler) SendWordsToType(c *gin.Context) {
+	logsData := logs.LogEntry{}
+	logsData.Method = c.Request.Method
+	logsData.Path = c.FullPath()
+	defer func() {
+		if r := recover(); r != nil {
 
+			logsData.Method = c.Request.Method
+			logsData.Path = c.FullPath()
+			logsData.ExtraData = r
+			h.logsChan <- logsData
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error":  "something went wrong",
+				"status": http.StatusInternalServerError,
+				"data":   nil,
+			})
+		}
+
+	}()
+
+	data := h.typingUseCase.SendTypingSentence(context.Background())
+	start := time.Now()
+	logsData.Latency = logs.Duration(time.Since(start))
+	logsData.Level = LogLevelInfo
+	logsData.Msg = "recent test fetched successfully"
+	logsData.Status = http.StatusOK
+	logsData.ResponseData = data
+	h.logsChan <- logsData
+	c.JSON(http.StatusOK, gin.H{
+		"message": "recent test fetched successfully",
+		"status":  http.StatusOK,
+		"data":    data,
+	})
+
+}

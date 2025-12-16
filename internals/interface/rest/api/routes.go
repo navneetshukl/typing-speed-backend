@@ -35,6 +35,7 @@ func SetUpRoutes(handler handler.Handler) *gin.Engine {
 	api.GET("/userData", handler.UserByEmailHandler)
 	api.GET("/topPerformer", handler.TopPerformerHandler)
 	api.GET("/allUser", handler.DataForDashboardHandler)
+	api.GET("/typingWord", handler.SendWordsToType)
 
 	dashboard := protected.Group("/dashboard")
 	dashboard.GET("/recentTest", handler.RecentTestDashboardHandler)

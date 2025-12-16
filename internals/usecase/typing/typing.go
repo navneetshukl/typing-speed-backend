@@ -3,7 +3,10 @@ package typing
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"strconv"
+	"strings"
+	"time"
 	"typing-speed/internals/adapter/external/sendmail"
 	"typing-speed/internals/adapter/port"
 	"typing-speed/internals/core/typing"
@@ -50,13 +53,13 @@ func (t *TypingServiceImpl) AddTestData(ctx context.Context, data *typing.Typing
 	if userData.BestSpeed > (bestSpeed) {
 		bestSpeed = int(userData.BestSpeed)
 	}
-	updatedSpeed:=(data.WPM+(userData.AvgSpeed*userData.TotalTest))/(userData.TotalTest+1)
+	updatedSpeed := (data.WPM + (userData.AvgSpeed * userData.TotalTest)) / (userData.TotalTest + 1)
 	currentPerformance := (data.WPM * currentAccuracy)
 
 	updatedPerformance := (userData.AvgPerformance*(userData.TotalTest) + currentPerformance) /
-		(userData.TotalTest+1)
+		(userData.TotalTest + 1)
 
-	err = t.userSvc.UpdateUser(ctx, email, updatedSpeed, updatedAccuracy,updatedPerformance,bestSpeed)
+	err = t.userSvc.UpdateUser(ctx, email, updatedSpeed, updatedAccuracy, updatedPerformance, bestSpeed)
 	if err != nil {
 		errorStruct.Error = typing.ErrUpdatingTotalTest
 		errorStruct.ErrorMsg = fmt.Sprintf("failed to updating test count: %v", err)
@@ -86,4 +89,19 @@ func (t *TypingServiceImpl) RecentTestForProfile(ctx context.Context, email stri
 		return nil, errorStruct
 	}
 	return data, nil
+}
+
+func (t *TypingServiceImpl) SendTypingSentence(ctx context.Context) string {
+	words := "abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ@#$&"
+	str := strings.Builder{}
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	len := len(words)
+
+	for i := 1; i <= 150; i++ {
+		idx := r.Intn(len)
+		str.WriteByte(words[idx])
+
+	}
+	return str.String()
+
 }
