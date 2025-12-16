@@ -15,7 +15,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   app:
-    image: navneetshukla/typing-speed:latest
+    build: .
     container_name: typing-go-app
     depends_on:
       - postgres
