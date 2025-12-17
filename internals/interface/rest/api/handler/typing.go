@@ -127,6 +127,10 @@ func (h *Handler) RecentTestDashboardHandler(c *gin.Context) {
 		return
 	}
 
+	if data==nil{
+		data=[]*typing.TypingData{}
+	}
+
 	logsData.Latency = logs.Duration(time.Since(start))
 	logsData.Level = LogLevelInfo
 	logsData.Msg = "recent test fetched successfully"

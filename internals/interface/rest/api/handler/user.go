@@ -179,7 +179,7 @@ func (h *Handler) RefreshHandler(c *gin.Context) {
 		logsData.Status = http.StatusUnauthorized
 		h.logsChan <- logsData
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"error":  "refres token not present",
+			"error":  "refresh token not present",
 			"status": http.StatusUnauthorized,
 			"data":   nil,
 		})
@@ -239,6 +239,9 @@ func (h *Handler) UserByEmailHandler(c *gin.Context) {
 		h.handlerError(c, err, &logsData)
 		return
 	}
+	if data==nil{
+		data=&user.User{}
+	}
 
 	logsData.Latency = logs.Duration(time.Since(start))
 	logsData.Level = LogLevelInfo
@@ -283,6 +286,9 @@ func (h *Handler) TopPerformerHandler(c *gin.Context) {
 	}
 
 	fmt.Println("Top performer is ", data)
+	if data==nil{
+		data=[]*user.TopPerformer{}
+	}
 
 	logsData.Latency = logs.Duration(time.Since(start))
 	logsData.Level = LogLevelInfo
@@ -324,6 +330,9 @@ func (h *Handler) DataForDashboardHandler(c *gin.Context) {
 		logsData.Level = LogLevelError
 		h.handlerError(c, err, &logsData)
 		return
+	}
+	if data==nil{
+		data=&user.DashboardData{}
 	}
 
 	logsData.Latency = logs.Duration(time.Since(start))
