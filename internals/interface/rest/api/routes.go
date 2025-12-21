@@ -4,7 +4,6 @@ import (
 	"typing-speed/internals/interface/rest/api/handler"
 	"typing-speed/middleware"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 )
@@ -12,20 +11,24 @@ import (
 func SetUpRoutes(handler handler.Handler) *gin.Engine {
 	app := gin.New()
 
-	// app.Use(cors.New(cors.Config{
-	// 	AllowOrigins:     []string{"http://localhost:5173"},
-	// 	AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-	// 	AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
-	// 	ExposeHeaders:    []string{"Content-Length"},
-	// 	AllowCredentials: true,
-	// }))
+	// ✅ Custom CORS middleware (credentials-safe)
+	app.Use(func(c *gin.Context) {
+		origin := c.Request.Header.Get("Origin")
 
-	app.Use(cors.New(cors.Config{
-	AllowAllOrigins: true,
-	AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-	AllowHeaders: []string{"Origin", "Content-Type", "Accept", "Authorization"},
-}))
+		if origin != "" {
+			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
+			c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+			c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+			c.Writer.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Accept, Authorization")
+		}
 
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+
+		c.Next()
+	})
 
 	// Debug profiling
 	pprof.Register(app)
