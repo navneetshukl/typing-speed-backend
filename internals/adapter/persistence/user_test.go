@@ -93,7 +93,7 @@ func TestCreateUser_DBError(t *testing.T) {
 
 	u := &user.User{
 		Name:     "Navneet",
-		Email:    "test@test.com",
+		Email:    "test@test1.com",
 		Password: "hashed",
 	}
 
