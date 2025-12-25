@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"time"
+	"typing-speed/internals/adapter/port"
 	"typing-speed/internals/core/user"
 )
 
@@ -12,8 +13,8 @@ type UserRepositoryImpl struct {
 	db *sql.DB
 }
 
-func NewUserRepository(db *sql.DB) UserRepositoryImpl {
-	return UserRepositoryImpl{
+func NewUserRepository(db *sql.DB) port.UserRepository {
+	return &UserRepositoryImpl{
 		db: db,
 	}
 }

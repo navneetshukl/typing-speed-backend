@@ -52,10 +52,10 @@ func main() {
 	}
 	mailSvc := sendmail.NewGoMail("localhost", 1025)
 	userDBService := db.NewUserRepository(dbConn)
-	userUseCase := userSvc.NewUserService(&userDBService, mailSvc)
+	userUseCase := userSvc.NewUserService(userDBService, mailSvc)
 
-	testDBService := db.NewTestRepository(dbConn)
-	typingUseCase := typeSvc.NewTypingService(&userDBService, mailSvc, &testDBService)
+	typingDBService := db.NewTestRepository(dbConn)
+	typingUseCase := typeSvc.NewTypingService(userDBService, mailSvc, typingDBService)
 
 	handler := handler.NewHandler(typingUseCase, userUseCase, logChan)
 	router := routes.SetUpRoutes(handler)

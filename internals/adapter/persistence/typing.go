@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"typing-speed/internals/adapter/port"
 	"typing-speed/internals/core/typing"
 )
 
@@ -11,8 +12,8 @@ type TestRepositoryImpl struct {
 	db *sql.DB
 }
 
-func NewTestRepository(db *sql.DB) TestRepositoryImpl {
-	return TestRepositoryImpl{
+func NewTestRepository(db *sql.DB) port.TypingRepository {
+	return &TestRepositoryImpl{
 		db: db,
 	}
 }

@@ -16,10 +16,10 @@ import (
 type TypingServiceImpl struct {
 	userSvc port.UserRepository
 	mailSvc sendmail.MailSender
-	testSvc port.TestRepository
+	testSvc port.TypingRepository
 }
 
-func NewTypingService(svc port.UserRepository, mail sendmail.MailSender, test port.TestRepository) typing.TypingService {
+func NewTypingService(svc port.UserRepository, mail sendmail.MailSender, test port.TypingRepository) typing.TypingService {
 	return &TypingServiceImpl{
 		userSvc: svc,
 		mailSvc: mail,
