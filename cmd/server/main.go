@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -49,13 +50,17 @@ func main() {
 	handler := handler.NewHandler(typingUseCase, userUseCase, logChan)
 	router := routes.SetUpRoutes(handler)
 
+	port := os.Getenv("PORT")
+    if port == "" {
+        port = "8080" // Default to 8080 for local testing
+    }
 	srv := &http.Server{
-		Addr:    ":8080",
+		Addr:    fmt.Sprintf(":%s",port),
 		Handler: router,
 	}
 
 	go func() {
-		log.Println("🚀 Server is running on port 8080")
+		log.Println("🚀 Server is running on port # ",port)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("listen: %s\n", err)
 		}
