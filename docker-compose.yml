@@ -7,7 +7,7 @@ services:
     restart: always
     environment:
       POSTGRES_USER: navneetshukla
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: terwtr@43$!&%$*12345#!&sq,.kjytcxae
       POSTGRES_DB: typing
     ports:
       - "5432:5432"
