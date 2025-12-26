@@ -40,7 +40,8 @@ func main() {
 		log.Println("Error connecting to DB:", err)
 		return
 	}
-	mailSvc := sendmail.NewGoMail("localhost", 1025)
+	var mailSvc sendmail.MailSender
+	//mailSvc = sendmail.NewGoMail("localhost", 1025)
 	userDBService := db.NewUserRepository(dbConn)
 	userUseCase := userSvc.NewUserService(userDBService, mailSvc)
 
