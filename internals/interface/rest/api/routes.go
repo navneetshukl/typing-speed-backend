@@ -2,6 +2,7 @@ package routes
 
 import (
 	"net/http"
+	"regexp"
 	"time"
 	"typing-speed/internals/interface/rest/api/handler"
 	"typing-speed/middleware"
@@ -16,11 +17,13 @@ func SetUpRoutes(handler handler.Handler) *gin.Engine {
 
 	// ✅ Custom CORS middleware (credentials-safe)
 	app.Use(cors.New(cors.Config{
-		// Add your Vercel URL and localhost for testing
-		AllowOrigins:     []string{"https://typing-speed-frontend.vercel.app", "http://localhost:3000"},
+		AllowOriginFunc: func(origin string) bool {
+			// Allows localhost or any Vercel subdomain
+			return origin == "http://localhost:3000" ||
+				regexp.MustCompile(`^https://.*\.vercel\.app$`).MatchString(origin)
+		},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
-		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
