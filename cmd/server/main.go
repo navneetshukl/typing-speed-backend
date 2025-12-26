@@ -29,11 +29,11 @@ func main() {
 		}
 	}()
 
-	err := godotenv.Load()
-	if err != nil {
-		log.Println("Error Loading the env ", err)
-		return
-	}
+	_ = godotenv.Load()
+	// if err != nil {
+	// 	log.Println("Error Loading the env ", err)
+	// 	return
+	// }
 
 	dbConn, err := db.ConnectToDB()
 	if err != nil {
