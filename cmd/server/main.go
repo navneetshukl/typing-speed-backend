@@ -28,23 +28,12 @@ func main() {
 		}
 	}()
 
-	env := os.Getenv("env")
-	log.Println("ENV is ", env)
-	if env != "" {
-		// dir,err:=os.Getwd()
-		// if err!=nil{
-		// 	log.Println("Error loading current directory")
-		// 	return
-		// }
-		// log.Println("Current dir is ",dir)
-		// envPath:=fmt.Sprintf("%s/.env",dir)
-
-		err := godotenv.Load()
-		if err != nil {
-			log.Println("Error Loading the env ", err)
-			return
-		}
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("Error Loading the env ", err)
+		return
 	}
+
 	dbConn, err := db.ConnectToDB()
 	if err != nil {
 		log.Println("Error connecting to DB:", err)

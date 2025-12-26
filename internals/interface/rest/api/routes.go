@@ -1,9 +1,12 @@
 package routes
 
 import (
+	"net/http"
+	"time"
 	"typing-speed/internals/interface/rest/api/handler"
 	"typing-speed/middleware"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 )
@@ -12,26 +15,25 @@ func SetUpRoutes(handler handler.Handler) *gin.Engine {
 	app := gin.New()
 
 	// ✅ Custom CORS middleware (credentials-safe)
-	app.Use(func(c *gin.Context) {
-		origin := c.Request.Header.Get("Origin")
-
-		if origin != "" {
-			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
-			c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-			c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-			c.Writer.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Accept, Authorization")
-		}
-
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
-			return
-		}
-
-		c.Next()
-	})
+	app.Use(cors.New(cors.Config{
+		// Add your Vercel URL and localhost for testing
+		AllowOrigins:     []string{"https://typing-speed-frontend.vercel.app", "http://localhost:3000"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 
 	// Debug profiling
 	pprof.Register(app)
+
+	app.GET("/health", func(ctx *gin.Context) {
+		ctx.JSON(http.StatusOK, gin.H{
+			"status":  200,
+			"message": "Health is Good",
+		})
+	})
 
 	auth := app.Group("/auth")
 	auth.POST("/signup", handler.RegisterUser)
