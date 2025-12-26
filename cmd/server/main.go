@@ -10,12 +10,6 @@ import (
 	"syscall"
 	"time"
 
-	"typing-speed/internals/adapter/external/sendmail"
-	db "typing-speed/internals/adapter/persistence"
-	routes "typing-speed/internals/interface/rest/api"
-	"typing-speed/internals/interface/rest/api/handler"
-	typeSvc "typing-speed/internals/usecase/typing"
-	userSvc "typing-speed/internals/usecase/user"
 	"typing-speed/pkg/logs"
 
 	"github.com/joho/godotenv"
@@ -35,33 +29,34 @@ func main() {
 	// 	return
 	// }
 
-	dbConn, err := db.ConnectToDB()
-	if err != nil {
-		log.Println("Error connecting to DB:", err)
-		return
-	}
-	var mailSvc sendmail.MailSender
-	//mailSvc = sendmail.NewGoMail("localhost", 1025)
-	userDBService := db.NewUserRepository(dbConn)
-	userUseCase := userSvc.NewUserService(userDBService, mailSvc)
+	//var dbConn *sql.DB
+	//dbConn, err := db.ConnectToDB()
+	// if err != nil {
+	// 	log.Println("Error connecting to DB:", err)
+	// 	return
+	// }
+	// var mailSvc sendmail.MailSender
+	// //mailSvc = sendmail.NewGoMail("localhost", 1025)
+	// userDBService := db.NewUserRepository(dbConn)
+	// userUseCase := userSvc.NewUserService(userDBService, mailSvc)
 
-	typingDBService := db.NewTestRepository(dbConn)
-	typingUseCase := typeSvc.NewTypingService(userDBService, mailSvc, typingDBService)
+	// typingDBService := db.NewTestRepository(dbConn)
+	// typingUseCase := typeSvc.NewTypingService(userDBService, mailSvc, typingDBService)
 
-	handler := handler.NewHandler(typingUseCase, userUseCase, logChan)
-	router := routes.SetUpRoutes(handler)
+	// handler := handler.NewHandler(typingUseCase, userUseCase, logChan)
+	// router := routes.SetUpRoutes(handler)
 
 	port := os.Getenv("PORT")
-    if port == "" {
-        port = "8080" // Default to 8080 for local testing
-    }
+	if port == "" {
+		port = "8080" // Default to 8080 for local testing
+	}
 	srv := &http.Server{
-		Addr:    fmt.Sprintf(":%s",port),
-		Handler: router,
+		Addr:    fmt.Sprintf(":%s", port),
+		//Handler: router,
 	}
 
 	go func() {
-		log.Println("🚀 Server is running on port # ",port)
+		log.Println("🚀 Server is running on port # ", port)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("listen: %s\n", err)
 		}
