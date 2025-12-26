@@ -61,7 +61,7 @@ func (a *UserServiceImpl) RegisterUser(ctx context.Context, userData *user.User)
 		return errorStruct
 	}
 
-	err = a.mailSvc.SendMail("typing@gmail.com", userData.Email, "Register", "User registered successfully")
+	//err = a.mailSvc.SendMail("typing@gmail.com", userData.Email, "Register", "User registered successfully")
 
 	return nil
 }
