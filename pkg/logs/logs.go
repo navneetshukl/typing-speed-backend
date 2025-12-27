@@ -15,16 +15,17 @@ func (d Duration) MarshalJSON() ([]byte, error) {
 }
 
 type LogEntry struct {
-	Time      time.Time   `json:"time"`
-	Level     string      `json:"level"`
-	Msg       string      `json:"msg"`
-	Method    string      `json:"method"`
-	Path      string      `json:"path"`
-	Status    int         `json:"status"`
-	Latency   Duration    `json:"latency"`
-	ExtraData interface{} `json:"extraData"`
-	RequestData interface{} `json:"requestData"`
+	Time         time.Time   `json:"time"`
+	Level        string      `json:"level"`
+	Msg          string      `json:"msg"`
+	Method       string      `json:"method"`
+	Path         string      `json:"path"`
+	Status       int         `json:"status"`
+	Latency      Duration    `json:"latency"`
+	ExtraData    interface{} `json:"extraData"`
+	RequestData  interface{} `json:"requestData"`
 	ResponseData interface{} `json:"responseData"`
+	Error        error       `json:"error"`
 }
 
 func (l *LogEntry) CreateLog() {

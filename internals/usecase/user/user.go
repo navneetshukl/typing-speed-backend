@@ -26,7 +26,7 @@ func NewUserService(svc port.UserRepository, mail sendmail.MailSender) user.User
 // RegisterUser handles user registration
 func (a *UserServiceImpl) RegisterUser(ctx context.Context, userData *user.User) *user.ErrorStruct {
 	errorStruct := &user.ErrorStruct{}
-	log.Println("UserData is ",userData.Name," ",userData.Email," ",userData.Password)
+	log.Println("UserData is ", userData.Name, " ", userData.Email, " ", userData.Password)
 
 	if userData.Email == "" || userData.Name == "" || userData.Password == "" {
 		errorStruct.Error = user.ErrInvalidUserDetail
@@ -67,7 +67,7 @@ func (a *UserServiceImpl) RegisterUser(ctx context.Context, userData *user.User)
 }
 
 // LoginUser userenticates user credentials and generates tokens
-func (a *UserServiceImpl) LoginUser(ctx context.Context, userData *user.LoginUser) (interface{}, *user.ErrorStruct) {
+func (a *UserServiceImpl) LoginUser(ctx context.Context, userData *user.LoginUser) (*user.LoginResponse, *user.ErrorStruct) {
 	errorStruct := &user.ErrorStruct{}
 
 	if userData.Email == "" || userData.Password == "" {
@@ -109,14 +109,20 @@ func (a *UserServiceImpl) LoginUser(ctx context.Context, userData *user.LoginUse
 		return nil, errorStruct
 	}
 
-	loginResponse := struct {
-		AccessToken  string     `json:"accessToekn"`
-		RefreshToken string     `json:"refreshToken"`
-		User         *user.User `json:"user"`
-	}{
+	// loginResponse := struct {
+	// 	AccessToken  string     `json:"accessToekn"`
+	// 	RefreshToken string     `json:"refreshToken"`
+	// 	User         *user.User `json:"user"`
+	// }{
+	// 	AccessToken:  accessToken,
+	// 	User:         data,
+	// 	RefreshToken: refreshToken,
+	// }
+
+	loginResponse := &user.LoginResponse{
 		AccessToken:  accessToken,
-		User:         data,
 		RefreshToken: refreshToken,
+		User:         data,
 	}
 
 	return loginResponse, nil

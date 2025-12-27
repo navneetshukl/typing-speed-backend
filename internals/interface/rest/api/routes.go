@@ -19,7 +19,7 @@ func SetUpRoutes(handler handler.Handler) *gin.Engine {
 	app.Use(cors.New(cors.Config{
 		AllowOriginFunc: func(origin string) bool {
 			// Allows localhost or any Vercel subdomain
-			return origin == "http://localhost:3000" ||
+			return origin == "http://localhost:5173" ||
 				regexp.MustCompile(`^https://.*\.vercel\.app$`).MatchString(origin)
 		},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},

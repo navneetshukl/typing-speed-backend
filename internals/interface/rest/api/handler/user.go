@@ -2,8 +2,6 @@ package handler
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 	"typing-speed/internals/core/user"
@@ -13,191 +11,96 @@ import (
 )
 
 func (h *Handler) RegisterUser(c *gin.Context) {
-	logsData := logs.LogEntry{}
-	defer func() {
-		if r := recover(); r != nil {
-			h.logsChan <- logsData
-			logsData.Method = c.Request.Method
-			logsData.Path = c.FullPath()
-			logsData.ExtraData = r
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error":  "something went wrong",
-				"status": http.StatusInternalServerError,
-				"data":   nil,
-			})
-		}
-
-	}()
-
 	start := time.Now()
+
+	logsData := &logs.LogEntry{
+		Time:   start,
+		Method: c.Request.Method,
+		Path:   c.FullPath(),
+	}
+
+	defer h.recoverPanic(c, start, logsData)
+
 	var userData user.User
-	err := c.ShouldBindJSON(&userData)
+	if err := c.ShouldBindJSON(&userData); err != nil {
+		logsData.RequestData = userData
+		h.respondError(c, http.StatusBadRequest, "invalid request body", err, start, logsData)
+		return
+	}
+
 	logsData.RequestData = userData
-	if err != nil {
-		logsData.Latency = logs.Duration(time.Since(start))
-		logsData.Level = LogLevelError
-		logsData.Msg = err.Error()
-		logsData.Status = http.StatusInternalServerError
-		h.logsChan <- logsData
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":  "something went wrong",
-			"status": http.StatusInternalServerError,
-			"data":   nil,
-		})
+
+	if err := h.userUseCase.RegisterUser(c.Request.Context(), &userData); err != nil {
+		h.handleServiceError(c, err, logsData, start)
 		return
 	}
 
-	er := h.userUseCase.RegisterUser(context.Background(), &userData)
-	if er != nil {
-		logsData.Latency = logs.Duration(time.Since(start))
-		logsData.Level = LogLevelError
-		h.handlerError(c, er, &logsData)
-		return
-	}
-	logsData.Latency = logs.Duration(time.Since(start))
-	logsData.Level = LogLevelInfo
-	logsData.Msg = "user registered successfully"
-	logsData.Status = http.StatusOK
-	h.logsChan <- logsData
-	c.JSON(http.StatusOK, gin.H{
-		"message": "user registered successfully",
-		"status":  http.StatusOK,
-		"data":    nil,
-	})
-
+	h.respondSuccess(c, "user registered successfully", start, logsData, nil)
 }
 
 func (h *Handler) LoginUser(c *gin.Context) {
-	logsData := logs.LogEntry{}
-	logsData.Method = c.Request.Method
-	logsData.Path = c.FullPath()
-	defer func() {
-		if r := recover(); r != nil {
-
-			logsData.Method = c.Request.Method
-			logsData.Path = c.FullPath()
-			logsData.ExtraData = r
-			h.logsChan <- logsData
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error":  "something went wrong",
-				"status": http.StatusInternalServerError,
-				"data":   nil,
-			})
-		}
-
-	}()
 	start := time.Now()
+
+	logsData := &logs.LogEntry{
+		Time:   start,
+		Method: c.Request.Method,
+		Path:   c.FullPath(),
+	}
+
+	defer h.recoverPanic(c, start, logsData)
+
 	var userData user.LoginUser
-	err := c.ShouldBindJSON(&userData)
+	if err := c.ShouldBindJSON(&userData); err != nil {
+		logsData.RequestData = userData
+		h.respondError(c, http.StatusBadRequest, "invalid request body", err, start, logsData)
+		return
+	}
+
 	logsData.RequestData = userData
+
+	loginData, err := h.userUseCase.LoginUser(c.Request.Context(), &userData)
 	if err != nil {
-		logsData.Latency = logs.Duration(time.Since(start))
-		logsData.Level = LogLevelError
-		logsData.Msg = err.Error()
-		logsData.Status = http.StatusInternalServerError
-		h.logsChan <- logsData
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":  "something went wrong",
-			"status": http.StatusInternalServerError,
-			"data":   nil,
-		})
+		h.handleServiceError(c, err, logsData, start)
 		return
 	}
 
-	loginData, er := h.userUseCase.LoginUser(context.Background(), &userData)
-	if er != nil {
-		logsData.Latency = logs.Duration(time.Since(start))
-		logsData.Level = LogLevelError
-		h.handlerError(c, er, &logsData)
-		return
-	}
-	loginResp :=struct {
-		AccessToken  string     `json:"accessToekn"`
-		RefreshToken string     `json:"refreshToken"`
-		User         *user.User `json:"user"`
-	}{}
+	// ✅ Use common success handler
+	h.respondSuccess(c, "user login successful", start, logsData, loginData)
 
-	jsonByte,err:=json.Marshal(loginData)
-	if err!=nil{
-		logsData.Latency = logs.Duration(time.Since(start))
-		logsData.Level = LogLevelError
-		h.handlerError(c, er, &logsData)
-		return
-	}
-
-	err=json.Unmarshal(jsonByte,&loginResp)
-	if err!=nil{
-		logsData.Latency = logs.Duration(time.Since(start))
-		logsData.Level = LogLevelError
-		h.handlerError(c, er, &logsData)
-		return
-	}
-	refToken := loginResp.RefreshToken
-	accToken := loginResp.AccessToken
-	data := loginResp.User
-	logsData.Latency = logs.Duration(time.Since(start))
-	logsData.Level = LogLevelInfo
-	logsData.Msg = "user login successfully"
-	logsData.Status = http.StatusOK
-	h.logsChan <- logsData
-	c.SetCookie("refresh_token", refToken, int(24*7*time.Hour), "/", "", false, true)
-	c.JSON(http.StatusOK, gin.H{
-		"message":      "user login successfully",
-		"status":       http.StatusOK,
-		"data":         data,
-		"access_token": accToken,
-	})
-
+	// Set refresh token cookie AFTER response log is prepared
+	c.SetCookie(
+		"refresh_token",
+		loginData.RefreshToken,
+		int((24 * time.Hour).Seconds()),
+		"/",
+		"",
+		false,
+		true,
+	)
 }
 
-func (h *Handler) RefreshHandler(c *gin.Context) {
-	logsData := logs.LogEntry{}
-	logsData.Method = c.Request.Method
-	logsData.Path = c.FullPath()
-	defer func() {
-		if r := recover(); r != nil {
-
-			logsData.Method = c.Request.Method
-			logsData.Path = c.FullPath()
-			logsData.ExtraData = r
-			h.logsChan <- logsData
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error":  "something went wrong",
-				"status": http.StatusInternalServerError,
-				"data":   nil,
-			})
-		}
-
-	}()
-
+func (h *Handler) RefreshHandlerV1(c *gin.Context) {
 	start := time.Now()
+
+	logsData := &logs.LogEntry{
+		Time:   start,
+		Method: c.Request.Method,
+		Path:   c.FullPath(),
+	}
+
+	defer h.recoverPanic(c, start, logsData)
 	cookie, err := c.Cookie("refresh_token")
 	if err != nil {
-		logsData.Latency = logs.Duration(time.Since(start))
-		logsData.Level = LogLevelError
-		logsData.Msg = "Refresh Token Not Present"
-		logsData.Status = http.StatusUnauthorized
-		h.logsChan <- logsData
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error":  "refresh token not present",
-			"status": http.StatusUnauthorized,
-			"data":   nil,
-		})
+		h.respondError(c, http.StatusUnauthorized, "refresh token not present", err, start, logsData)
 		return
 	}
 
 	accToken, refToken, er := h.userUseCase.RefreshToken(context.Background(), cookie)
 	if er != nil {
-		logsData.Latency = logs.Duration(time.Since(start))
-		logsData.Level = LogLevelError
-		h.handlerError(c, er, &logsData)
+		h.handleServiceError(c, er, logsData, start)
 		return
+
 	}
-	logsData.Latency = logs.Duration(time.Since(start))
-	logsData.Level = LogLevelInfo
-	logsData.Msg = "refresh token generated successfully"
-	logsData.Status = http.StatusOK
-	h.logsChan <- logsData
 	c.SetCookie("refresh_token", refToken, int(24*7*time.Hour), "/", "", false, true)
 	c.JSON(http.StatusOK, gin.H{
 		"message":      "refresh token generated successfully",
@@ -209,141 +112,74 @@ func (h *Handler) RefreshHandler(c *gin.Context) {
 }
 
 func (h *Handler) UserByEmailHandler(c *gin.Context) {
-	logsData := logs.LogEntry{}
-	logsData.Method = c.Request.Method
-	logsData.Path = c.FullPath()
-	defer func() {
-		if r := recover(); r != nil {
-
-			logsData.Method = c.Request.Method
-			logsData.Path = c.FullPath()
-			logsData.ExtraData = r
-			h.logsChan <- logsData
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error":  "something went wrong",
-				"status": http.StatusInternalServerError,
-				"data":   nil,
-			})
-		}
-
-	}()
 	start := time.Now()
+
+	logsData := &logs.LogEntry{
+		Time:   start,
+		Method: c.Request.Method,
+		Path:   c.FullPath(),
+	}
+
+	defer h.recoverPanic(c, start, logsData)
 
 	email := c.GetString("email")
-	fmt.Println("Email is ", email)
 
-	data, err := h.userUseCase.UserByEmail(context.Background(), email)
+	data, err := h.userUseCase.UserByEmail(c.Request.Context(), email)
 	if err != nil {
-		logsData.Latency = logs.Duration(time.Since(start))
-		logsData.Level = LogLevelError
-		h.handlerError(c, err, &logsData)
+		h.handleServiceError(c, err, logsData, start)
 		return
 	}
-	if data==nil{
-		data=&user.User{}
+
+	if data == nil {
+		data = &user.User{}
 	}
 
-	logsData.Latency = logs.Duration(time.Since(start))
-	logsData.Level = LogLevelInfo
-	logsData.Msg = "user data fetched successfully"
-	logsData.Status = http.StatusOK
-	logsData.ResponseData = data
-	h.logsChan <- logsData
-	c.JSON(http.StatusOK, gin.H{
-		"message": "user data fetched successfully",
-		"status":  http.StatusOK,
-		"data":    data,
-	})
+	h.respondSuccess(c, "user data fetched successfully", start, logsData, data)
 }
-
 func (h *Handler) TopPerformerHandler(c *gin.Context) {
-	logsData := logs.LogEntry{}
-	logsData.Method = c.Request.Method
-	logsData.Path = c.FullPath()
-	defer func() {
-		if r := recover(); r != nil {
-
-			logsData.Method = c.Request.Method
-			logsData.Path = c.FullPath()
-			logsData.ExtraData = r
-			h.logsChan <- logsData
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error":  "something went wrong",
-				"status": http.StatusInternalServerError,
-				"data":   nil,
-			})
-		}
-
-	}()
 	start := time.Now()
 
-	data, err := h.userUseCase.TopPerformer(context.Background())
+	logsData := &logs.LogEntry{
+		Time:   start,
+		Method: c.Request.Method,
+		Path:   c.FullPath(),
+	}
+
+	defer h.recoverPanic(c, start, logsData)
+
+	data, err := h.userUseCase.TopPerformer(c.Request.Context())
 	if err != nil {
-		logsData.Latency = logs.Duration(time.Since(start))
-		logsData.Level = LogLevelError
-		h.handlerError(c, err, &logsData)
+		h.handleServiceError(c, err, logsData, start)
 		return
 	}
 
-	fmt.Println("Top performer is ", data)
-	if data==nil{
-		data=[]*user.TopPerformer{}
+	if data == nil {
+		data = []*user.TopPerformer{}
 	}
 
-	logsData.Latency = logs.Duration(time.Since(start))
-	logsData.Level = LogLevelInfo
-	logsData.Msg = "top performer fetched successfully"
-	logsData.Status = http.StatusOK
-	logsData.ResponseData = data
-	h.logsChan <- logsData
-	c.JSON(http.StatusOK, gin.H{
-		"message": "top performer fetched successfully",
-		"status":  http.StatusOK,
-		"data":    data,
-	})
+	h.respondSuccess(c, "top performer fetched successfully", start, logsData, data)
 }
 
 func (h *Handler) DataForDashboardHandler(c *gin.Context) {
-	logsData := logs.LogEntry{}
-	logsData.Method = c.Request.Method
-	logsData.Path = c.FullPath()
-	defer func() {
-		if r := recover(); r != nil {
-
-			logsData.Method = c.Request.Method
-			logsData.Path = c.FullPath()
-			logsData.ExtraData = r
-			h.logsChan <- logsData
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error":  "something went wrong",
-				"status": http.StatusInternalServerError,
-				"data":   nil,
-			})
-		}
-
-	}()
 	start := time.Now()
 
-	data, err := h.userUseCase.GetDataForDashboard(context.Background())
-	if err != nil {
-		logsData.Latency = logs.Duration(time.Since(start))
-		logsData.Level = LogLevelError
-		h.handlerError(c, err, &logsData)
-		return
-	}
-	if data==nil{
-		data=&user.DashboardData{}
+	logsData := &logs.LogEntry{
+		Time:   start,
+		Method: c.Request.Method,
+		Path:   c.FullPath(),
 	}
 
-	logsData.Latency = logs.Duration(time.Since(start))
-	logsData.Level = LogLevelInfo
-	logsData.Msg = "user data fetched successfully"
-	logsData.Status = http.StatusOK
-	logsData.ResponseData = data
-	h.logsChan <- logsData
-	c.JSON(http.StatusOK, gin.H{
-		"message": "user data fetched successfully",
-		"status":  http.StatusOK,
-		"data":    data,
-	})
+	defer h.recoverPanic(c, start, logsData)
+
+	data, err := h.userUseCase.GetDataForDashboard(c.Request.Context())
+	if err != nil {
+		h.handleServiceError(c, err, logsData, start)
+		return
+	}
+
+	if data == nil {
+		data = &user.DashboardData{}
+	}
+
+	h.respondSuccess(c, "user data fetched successfully", start, logsData, data)
 }
