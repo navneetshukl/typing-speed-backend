@@ -34,9 +34,9 @@ type LoginUser struct {
 }
 
 type LoginResponse struct {
-	AccessToken  string
-	RefreshToken string
-	User         *User
+	AccessToken  string `json:"accessToken"`
+	RefreshToken string `json:"refreshToken"`
+	User         *User `json:"user"`
 }
 
 type AccessClaims struct {
@@ -61,10 +61,10 @@ type DashboardData struct {
 }
 
 type UserService interface {
-	RegisterUser(ctx context.Context, user *User) *ErrorStruct
-	LoginUser(ctx context.Context, user *LoginUser) (*LoginResponse, *ErrorStruct)
-	RefreshToken(ctx context.Context, refreshToken string) (string, string, *ErrorStruct)
-	UserByEmail(ctx context.Context, email string) (*User, *ErrorStruct)
-	TopPerformer(ctx context.Context) ([]*TopPerformer, *ErrorStruct)
-	GetDataForDashboard(ctx context.Context) (*DashboardData, *ErrorStruct)
+	RegisterUser(ctx context.Context, user *User) error
+	LoginUser(ctx context.Context, user *LoginUser) (*LoginResponse, error)
+	RefreshToken(ctx context.Context, refreshToken string) (string, string, error)
+	UserByEmail(ctx context.Context, email string) (*User, error)
+	TopPerformer(ctx context.Context) ([]*TopPerformer, error)
+	GetDataForDashboard(ctx context.Context) (*DashboardData, error)
 }

@@ -44,7 +44,7 @@ func (f *FakeUserRepo) GetTopPerformer(ctx context.Context) ([]*user.TopPerforme
 
 // UpdateUser implements port.UserRepository.
 func (f *FakeUserRepo) UpdateUser(ctx context.Context, email string, speed int, accuracy int, performance int, bestSpeed int) error {
-	panic("unimplemented")
+	return nil
 }
 
 func (f *FakeUserRepo) GetUserByEmail(ctx context.Context, email string) (*user.User, error) {
@@ -178,8 +178,8 @@ func TestRegisterUser(t *testing.T) {
 				if err == nil {
 					t.Fatalf("expected error, got nil")
 				}
-				if tt.expectedError != nil && err.Error != tt.expectedError {
-					t.Fatalf("expected %v, got %v", tt.expectedError, err.Error)
+				if tt.expectedError != nil && !errors.Is(err, tt.expectedError) {
+					t.Fatalf("expected %v, got %v", tt.expectedError, err.Error())
 				}
 			} else {
 				if err != nil {
@@ -278,8 +278,8 @@ func TestLogin(t *testing.T) {
 				if err == nil {
 					t.Fatalf("expected error, got nil")
 				}
-				if tt.expectedError != nil && err.Error != tt.expectedError {
-					t.Fatalf("expected %v, got %v", tt.expectedError, err.Error)
+				if tt.expectedError != nil && err != tt.expectedError {
+					t.Fatalf("expected %v, got %v", tt.expectedError, err.Error())
 				}
 			} else {
 				if err != nil {
@@ -333,8 +333,8 @@ func TestUserByEmail(t *testing.T) {
 			if err == nil {
 				t.Fatalf("expected error, got nil")
 			}
-			if tt.expectedError != nil && err.Error != tt.expectedError {
-				t.Fatalf("expected %v, got %v", tt.expectedError, err.Error)
+			if tt.expectedError != nil && err != tt.expectedError {
+				t.Fatalf("expected %v, got %v", tt.expectedError, err.Error())
 			}
 		} else {
 			if err != nil {
@@ -387,8 +387,8 @@ func TestTopPerformer(t *testing.T) {
 				if err == nil {
 					t.Fatalf("expected error, got nil")
 				}
-				if tt.expectedError != nil && err.Error != tt.expectedError {
-					t.Fatalf("expected %v, got %v", tt.expectedError, err.Error)
+				if tt.expectedError != nil && err != tt.expectedError {
+					t.Fatalf("expected %v, got %v", tt.expectedError, err.Error())
 				}
 			} else {
 				if err != nil {
@@ -464,8 +464,8 @@ func TestGetDataForDashboard(t *testing.T) {
 				if err == nil {
 					t.Fatalf("expected error, got nil")
 				}
-				if tt.expectedError != nil && err.Error != tt.expectedError {
-					t.Fatalf("expected %v, got %v", tt.expectedError, err.Error)
+				if tt.expectedError != nil && err != tt.expectedError {
+					t.Fatalf("expected %v, got %v", tt.expectedError, err.Error())
 				}
 			} else {
 				if err != nil {
@@ -531,8 +531,8 @@ func TestRefreshToken(t *testing.T) {
 				if err == nil {
 					t.Fatalf("expected error, got nil")
 				}
-				if tt.expectedError != nil && err.Error != tt.expectedError {
-					t.Fatalf("expected %v, got %v", tt.expectedError, err.Error)
+				if tt.expectedError != nil && err != tt.expectedError {
+					t.Fatalf("expected %v, got %v", tt.expectedError, err.Error())
 				}
 			} else {
 				if err != nil {

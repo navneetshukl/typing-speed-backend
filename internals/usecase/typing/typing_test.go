@@ -190,8 +190,8 @@ func TestAddTestData(t *testing.T) {
 				if err == nil {
 					t.Fatalf("expected error, got nil")
 				}
-				if err.Error != tt.expectedError {
-					t.Fatalf("expected %v, got %v", tt.expectedError, err.Error)
+				if err != tt.expectedError {
+					t.Fatalf("expected %v, got %v", tt.expectedError, err.Error())
 				}
 			} else {
 				if err != nil {
@@ -256,8 +256,8 @@ func TestRecentTestForProfile(t *testing.T) {
 				if err == nil {
 					t.Fatalf("expected error, got nil")
 				}
-				if tt.expectedError != nil && err.Error != tt.expectedError {
-					t.Fatalf("expected %v, got %v", tt.expectedError, err.Error)
+				if tt.expectedError != nil && err != tt.expectedError {
+					t.Fatalf("expected %v, got %v", tt.expectedError, err.Error())
 				}
 			} else {
 				if err != nil {

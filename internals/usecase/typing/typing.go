@@ -2,7 +2,6 @@ package typing
 
 import (
 	"context"
-	"fmt"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -10,7 +9,6 @@ import (
 	"typing-speed/internals/adapter/external/sendmail"
 	"typing-speed/internals/adapter/port"
 	"typing-speed/internals/core/typing"
-	"typing-speed/internals/core/user"
 )
 
 type TypingServiceImpl struct {
@@ -27,25 +25,21 @@ func NewTypingService(svc port.UserRepository, mail sendmail.MailSender, test po
 	}
 }
 
-func (t *TypingServiceImpl) AddTestData(ctx context.Context, data *typing.TypingData, email string) *user.ErrorStruct {
-	errorStruct := &user.ErrorStruct{}
+func (t *TypingServiceImpl) AddTestData(ctx context.Context, data *typing.TypingData, email string) error {
 
 	// insert data into db
 	data.Email = email
 	err := t.testSvc.InsertTestData(ctx, data)
 	if err != nil {
-		errorStruct.Error = typing.ErrInsertingData
-		errorStruct.ErrorMsg = fmt.Sprintf("failed to insert typing data: %v", err)
-		return errorStruct
+		return typing.ErrInsertingData
 	}
 
 	// update the total test of user to +1
 
 	userData, err := t.userSvc.GetUserByEmail(ctx, email)
 	if err != nil {
-		errorStruct.Error = typing.ErrGettingDataFromDB
-		errorStruct.ErrorMsg = fmt.Sprintf("failed to get user from db: %v", err)
-		return errorStruct
+		return typing.ErrGettingDataFromDB
+
 	}
 	var currentAccuracy int
 	if data.TotalWords == 0 {
@@ -66,32 +60,25 @@ func (t *TypingServiceImpl) AddTestData(ctx context.Context, data *typing.Typing
 
 	err = t.userSvc.UpdateUser(ctx, email, updatedSpeed, updatedAccuracy, updatedPerformance, bestSpeed)
 	if err != nil {
-		errorStruct.Error = typing.ErrUpdatingTotalTest
-		errorStruct.ErrorMsg = fmt.Sprintf("failed to updating test count: %v", err)
-		return errorStruct
+		return typing.ErrUpdatingTotalTest
 	}
 
 	return nil
 }
 
-func (t *TypingServiceImpl) RecentTestForProfile(ctx context.Context, email string, month string) ([]*typing.TypingData, *user.ErrorStruct) {
-	errorStruct := &user.ErrorStruct{}
+func (t *TypingServiceImpl) RecentTestForProfile(ctx context.Context, email string, month string) ([]*typing.TypingData, error) {
 	var m int
 	var err error
 	if month != "" {
 		m, err = strconv.Atoi(month)
 		if err != nil {
-			errorStruct.Error = typing.ErrSomethingWentWrong
-			errorStruct.ErrorMsg = fmt.Sprintf("error converting string to int: %v", err)
-			return nil, errorStruct
+			return nil, typing.ErrSomethingWentWrong
 		}
 	}
 	m = -1
 	data, err := t.testSvc.GetRecentTestData(ctx, email, m)
 	if err != nil {
-		errorStruct.Error = typing.ErrGettingDataFromDB
-		errorStruct.ErrorMsg = fmt.Sprintf("failed to insert typing data: %v", err)
-		return nil, errorStruct
+		return nil, typing.ErrGettingDataFromDB
 	}
 	return data, nil
 }

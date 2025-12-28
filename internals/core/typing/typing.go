@@ -3,7 +3,6 @@ package typing
 import (
 	"context"
 	"time"
-	"typing-speed/internals/core/user"
 )
 
 type TypingData struct {
@@ -18,7 +17,7 @@ type TypingData struct {
 }
 
 type TypingService interface {
-	AddTestData(ctx context.Context, data *TypingData, email string) *user.ErrorStruct
-	RecentTestForProfile(ctx context.Context, email string, month string) ([]*TypingData, *user.ErrorStruct)
+	AddTestData(ctx context.Context, data *TypingData, email string) error
+	RecentTestForProfile(ctx context.Context, email string, month string) ([]*TypingData, error)
 	SendTypingSentence(ctx context.Context) string
 }

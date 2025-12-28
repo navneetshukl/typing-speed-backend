@@ -62,8 +62,8 @@ func (h *Handler) recoverPanic(c *gin.Context, start time.Time, logsData *logs.L
 }
 
 // handleServiceError handle error from service
-func (h *Handler) handleServiceError(c *gin.Context,errStruct *user.ErrorStruct,logsData *logs.LogEntry,start time.Time) {
-	err := errStruct.Error
+func (h *Handler) handleServiceError(c *gin.Context,err error,logsData *logs.LogEntry,start time.Time) {
+	//err := errStruct.Error
 
 	status := http.StatusInternalServerError
 	message := "something went wrong"
